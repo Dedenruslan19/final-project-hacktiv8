@@ -1,0 +1,1 @@
+folder to store the request or response structs
