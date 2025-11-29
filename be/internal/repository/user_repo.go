@@ -17,7 +17,7 @@ func NewUserRepo(db *gorm.DB, ctx context.Context) *UserRepo {
 }
 
 func (ur *UserRepo) Create(user *entity.Users) error {
-	if err := ur.db.WithContext(ur.ctx).Create(user).Error; err != nil {
+	if err := ur.db.WithContext(ur.ctx).Omit("RoleId").Create(user).Error; err != nil {
 		return err
 	}
 	

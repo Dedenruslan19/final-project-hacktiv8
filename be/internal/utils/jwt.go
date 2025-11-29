@@ -27,7 +27,7 @@ func GenerateJwtToken(email, role string, id int) (string, error) {
 	})
 		
 	secret_key := os.Getenv("SECRET_KEY")
-	tokenString, err := jwt_claim.SignedString(secret_key)
+	tokenString, err := jwt_claim.SignedString([]byte(secret_key))
 	if err != nil {
 		log.Println("error signed string jwt")
 		return "", err
