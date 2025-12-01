@@ -22,18 +22,22 @@ func main() {
 	//dependency injection
 	//repository
 	userRepo := repository.NewUserRepo(db, ctx)
+	paymentRepo := repository.NewPaymentRepository(db, ctx)
 	
 	//service
 	userServ := service.NewUserService(userRepo)
+	paymentServ := service.NewPaymentService(paymentRepo)
 	
 	//controller
 	userControl := controller.NewUserController(validator, userServ)
+	paymentControl := controller.NewPaymentController(validator, paymentServ)
 	
 	//echo
 	e := echo.New()
 	//router
 	router := routes.NewRouter(e)
 	router.RegisterUserRoutes(userControl)
+	router.RegisterPaymentRoutes(paymentControl)
 
 	address := os.Getenv("PORT")
 	if err := e.Start(":" + address); err != nil {
