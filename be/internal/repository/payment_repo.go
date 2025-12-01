@@ -21,27 +21,42 @@ func NewPaymentRepository(db *gorm.DB, ctx context.Context) *PaymentRepo {
 }
 
 func (pr *PaymentRepo) Create(payment *entity.Payment) (error) {
-	if err := pr.db.WithContext(pr.ctx).Create(payment).Error; err != nil {
+	if err := pr.db.WithContext(pr.ctx).Preload("User").Create(payment).Error; err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (pr *PaymentRepo) CreateMidtrans(payment entity.Payment) (res dto.PaymentResponse, err error) {
+func (pr *PaymentRepo) GetById(id int) (payment entity.Payment, err error) {
+	if err := pr.db.WithContext(pr.ctx).Preload("User").Preload("User.Role").Preload("PaymentStatus").First(&payment, id).Error; err != nil {
+		return entity.Payment{}, err
+	}
+
+	return payment, nil
+}
+
+func (pr *PaymentRepo) GetAll() (payment []entity.Payment, err error) {
+	if err := pr.db.WithContext(pr.ctx).Preload("User").Preload("User.Role").Preload("PaymentStatus").Find(&payment).Error; err != nil {
+		return []entity.Payment{}, err
+	}
+
+	return payment, err
+}
+
+func (pr *PaymentRepo) CreateMidtrans(payment entity.Payment, orderId string) (res dto.PaymentResponse, err error) {
 	serverKey := os.Getenv("MIDTRANS_SERVER_KEY")
 	c := coreapi.Client{}
 	c.New(serverKey, midtrans.Sandbox)
 	chargeReq := &coreapi.ChargeReq{
 		PaymentType: coreapi.PaymentTypeQris,
 		TransactionDetails: midtrans.TransactionDetails{
-			OrderID: payment.OrderId,
+			OrderID: orderId,
 			GrossAmt: int64(payment.Amount),
 		},
 		CustomerDetails: &midtrans.CustomerDetails{
-			FName: payment.Name,
-			Email: payment.Email,
-			Phone: payment.NoHp,
+			FName: payment.User.Name,
+			Email: payment.User.Email,
 		},
 	}
 	coreApiResp, _ := c.ChargeTransaction(chargeReq)
@@ -57,4 +72,23 @@ func (pr *PaymentRepo) CreateMidtrans(payment entity.Payment) (res dto.PaymentRe
 		ExpiryTime: coreApiResp.ExpiryTime,
 	}
 	return resp, nil
+}
+
+func (pr *PaymentRepo) CheckPaymentStatusMidtrans(transactionId string) (res dto.CheckPaymentStatusResponse, err error) {
+	serverKey := os.Getenv("MIDTRANS_SERVER_KEY")
+	c := coreapi.Client{}
+	c.New(serverKey, midtrans.Sandbox)	
+
+	resp, _ := c.CheckTransaction(transactionId)
+	// if err != nil {
+	// 	return dto.CheckPaymentStatusResponse{}, err
+	// }
+
+	respon := dto.CheckPaymentStatusResponse{
+		OrderId: resp.OrderID,
+		TransactionId: resp.TransactionID,
+		PaymentStatus: resp.TransactionStatus,
+	}
+
+	return respon, nil
 }

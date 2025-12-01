@@ -12,4 +12,7 @@ func (r *EchoRouter) RegisterPaymentRoutes(paymentCtrl *controller.PaymentContro
 
 	//payment endpoint
 	paymentRoutes.POST("", paymentCtrl.CreatePayment)
+	paymentRoutes.GET("/status/:id", paymentCtrl.CheckPaymentStatusMidtrans)
+	paymentRoutes.GET("/:id", paymentCtrl.GetPaymentById)
+	paymentRoutes.GET("", paymentCtrl.GetAllPayment)
 }

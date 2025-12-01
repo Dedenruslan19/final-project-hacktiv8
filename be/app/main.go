@@ -3,57 +3,78 @@ package main
 import (
 	"context"
 	"log"
-	"milestone3/be/api/routes"
-	"milestone3/be/config"
-	"milestone3/be/internal/controller"
-	"milestone3/be/internal/repository"
-	"milestone3/be/internal/service"
 	"os"
 
 	"cloud.google.com/go/storage"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
+
+	"milestone3/be/api/routes"
+	"milestone3/be/config"
+	"milestone3/be/internal/controller"
+	"milestone3/be/internal/repository"
+	"milestone3/be/internal/service"
 )
 
 func main() {
-
-	db := config.ConnectionDb()
-	validator := validator.New()
 	ctx := context.Background()
+	db := config.ConnectionDb()
+	validate := validator.New()
 
-	//dependency injection
-	// create GCS client
+	// create GCS client if configured
+	var gcsRepo repository.GCSStorageRepo
 	if bucket := os.Getenv("GCS_BUCKET"); bucket != "" {
 		gcsClient, err := storage.NewClient(ctx)
 		if err != nil {
 			log.Fatalf("failed to create gcs client: %v", err)
 		}
-		// create GCS repo but don't store it since it's not used elsewhere yet
-		_ = repository.NewGCSStorageRepo(gcsClient, bucket)
+		gcsRepo = repository.NewGCSStorageRepo(gcsClient, bucket)
 	} else {
 		log.Println("GCS_BUCKET not set — file uploads to GCS will fail if used")
 	}
-	//repository
+
+	// repositories
 	userRepo := repository.NewUserRepo(db, ctx)
+	articleRepo := repository.NewArticleRepo(db)
+	donationRepo := repository.NewDonationRepo(db)
+	finalDonationRepo := repository.NewFinalDonationRepository(db)
 	paymentRepo := repository.NewPaymentRepository(db, ctx)
 
-	//service
-	userServ := service.NewUserService(userRepo)
-	paymentServ := service.NewPaymentService(paymentRepo)
+	// services
+	userSvc := service.NewUserService(userRepo)
+	articleSvc := service.NewArticleService(articleRepo)
+	donationSvc := service.NewDonationService(donationRepo)
+	finalDonationSvc := service.NewFinalDonationService(finalDonationRepo)
+	paymentSvc := service.NewPaymentService(paymentRepo)
 
-	//controller
-	userControl := controller.NewUserController(validator, userServ)
-	paymentControl := controller.NewPaymentController(validator, paymentServ)
+	// controllers
+	userCtrl := controller.NewUserController(validate, userSvc)
+	articleCtrl := controller.NewArticleController(articleSvc)
 
-	//echo
+	var donationCtrl *controller.DonationController
+	if gcsRepo != nil {
+		donationCtrl = controller.NewDonationController(donationSvc, gcsRepo)
+	} else {
+		donationCtrl = controller.NewDonationController(donationSvc, nil)
+	}
+	finalDonationCtrl := controller.NewFinalDonationController(finalDonationSvc)
+	paymentCtrl := controller.NewPaymentController(validate, paymentSvc)
+
+	// echo + router
 	e := echo.New()
-	//router
 	router := routes.NewRouter(e)
-	router.RegisterUserRoutes(userControl)
-	router.RegisterPaymentRoutes(paymentControl)
 
-	address := os.Getenv("PORT")
-	if err := e.Start(":" + address); err != nil {
-		log.Printf("faile to start server %s", err)
+	router.RegisterUserRoutes(userCtrl)
+	router.RegisterArticleRoutes(articleCtrl)
+	router.RegisterDonationRoutes(donationCtrl)
+	router.RegisterFinalDonationRoutes(finalDonationCtrl)
+	router.RegisterPaymentRoutes(paymentCtrl)
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8000"
+	}
+	if err := e.Start(":" + port); err != nil {
+		log.Fatalf("failed to start server: %v", err)
 	}
 }

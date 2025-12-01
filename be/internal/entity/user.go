@@ -4,7 +4,7 @@ type Users struct {
 	Id int
 	Name string
 	Email string
-	Password string
+	Password string `json:"-"`
 	RoleId int
 	Role Role `gorm:"foreignKey:RoleId;references:Id"`
 }

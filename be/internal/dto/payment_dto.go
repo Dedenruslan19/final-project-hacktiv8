@@ -1,15 +1,31 @@
 package dto
 
+import "milestone3/be/internal/entity"
+
 type PaymentRequest struct {
-	OrderId int `json:"order_id"`
-	GrossAmount float64 `json:"gross_amount" validate:"required,gte=1"`
-	Name string `json:"name" validate:"required"`
-	NoHp string `json:"no_hp" validate:"required,gte=5"`
-	Email string `json:"email" validate:"required,email"`
+	UserId int `json:"user_id"`
+	AuctionItemId float64 `json:"auction_item_id"`
+	Amount float64 `json:"amount" validate:"required"`
 }
 
 type PaymentResponse struct {
 	PaymentLinkUrl string `json:"payment_link_url"`
 	TransactionId string `json:"transaction_id"`
 	ExpiryTime string `json:"expiry_time"`
+}
+
+type CheckPaymentStatusResponse struct {
+	OrderId string `json:"order_id"`
+	TransactionId string `json:"transaction_id"`
+	PaymentStatus string `json:"payment_status"`
+}
+
+type PaymentInfoResponse struct {
+	Id int `json:"id"`
+	UserId int `json:"user_id"`
+	User entity.Users `json:"user"`
+	AuctionItemId float64 `json:"auction_item_id"`
+	StatusId int `json:"status_ud"`
+	PaymentStatus entity.PaymentStatus `json:"payment_status"`
+	Amount float64 `json:"amount"`
 }
