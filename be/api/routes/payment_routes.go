@@ -8,6 +8,7 @@ import (
 func (r *EchoRouter) RegisterPaymentRoutes(paymentCtrl *controller.PaymentController) {
 	paymentRoutes := r.echo.Group("/payments")
 	paymentRoutes.Use(middleware.JWTMiddleware)
+	paymentRoutes.Use(middleware.LoggingMiddleware)
 
 	//payment endpoint
 	paymentRoutes.POST("", paymentCtrl.CreatePayment)

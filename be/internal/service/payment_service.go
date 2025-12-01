@@ -29,7 +29,7 @@ func (ps *PaymentServ) CreatePayment(req dto.PaymentRequest) (res dto.PaymentRes
 	
 	payment := entity.Payment{
 		OrderId: orderId,
-		GrossAmount: req.GrossAmount,
+		Amount: req.GrossAmount,
 		Name: req.Name,
 		Email: req.Email,
 		NoHp: req.NoHp,
@@ -39,11 +39,8 @@ func (ps *PaymentServ) CreatePayment(req dto.PaymentRequest) (res dto.PaymentRes
 		return dto.PaymentResponse{}, err
 	}
 
-	resp, err := ps.paymentRepo.CreateMidtrans(payment)
-	if err != nil {
-		log.Printf("error create payment midtrans %s", err)
-		return dto.PaymentResponse{}, err
-	}
+	log.Println("disini nih")
+	resp, _ := ps.paymentRepo.CreateMidtrans(payment)
 
 	return resp, nil
 }
