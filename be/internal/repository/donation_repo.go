@@ -8,10 +8,15 @@ import (
 
 type DonationRepo interface {
 	CreateDonation(donation entity.Donation) error
-	GetAllDonations() ([]entity.Donation, error)
 	GetDonationByID(id uint) (entity.Donation, error)
 	UpdateDonation(donation entity.Donation) error
 	DeleteDonation(id uint) error
+
+	// Admin-only or filtered queries
+	GetAllDonations() ([]entity.Donation, error)
+	GetDonationsByUserID(userID uint) ([]entity.Donation, error)
+
+	PatchDonation(donation entity.Donation) error
 }
 
 type donationRepo struct {
@@ -32,6 +37,12 @@ func (r *donationRepo) GetAllDonations() ([]entity.Donation, error) {
 	return donations, err
 }
 
+func (r *donationRepo) GetDonationsByUserID(userID uint) ([]entity.Donation, error) {
+	var donations []entity.Donation
+	err := r.db.Where("user_id = ?", userID).Find(&donations).Error
+	return donations, err
+}
+
 func (r *donationRepo) GetDonationByID(id uint) (entity.Donation, error) {
 	var donation entity.Donation
 	err := r.db.First(&donation, id).Error
@@ -44,4 +55,8 @@ func (r *donationRepo) UpdateDonation(donation entity.Donation) error {
 
 func (r *donationRepo) DeleteDonation(id uint) error {
 	return r.db.Delete(&entity.Donation{}, id).Error
+}
+
+func (r *donationRepo) PatchDonation(donation entity.Donation) error {
+	return r.db.Model(&entity.Donation{}).Where("id = ?", donation.ID).Updates(donation).Error
 }

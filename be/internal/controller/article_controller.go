@@ -46,7 +46,7 @@ func (h *ArticleController) GetArticleByID(c echo.Context) error {
 
 // admin-only: POST /articles
 func (h *ArticleController) CreateArticle(c echo.Context) error {
-	if !isAdmin(c) {
+	if !utils.IsAdmin(c) {
 		return utils.ForbiddenResponse(c, "admin only")
 	}
 	var payload dto.ArticleDTO
@@ -61,7 +61,7 @@ func (h *ArticleController) CreateArticle(c echo.Context) error {
 
 // admin-only: PUT /articles/:id
 func (h *ArticleController) UpdateArticle(c echo.Context) error {
-	if !isAdmin(c) {
+	if !utils.IsAdmin(c) {
 		return utils.ForbiddenResponse(c, "admin only")
 	}
 	var payload dto.ArticleDTO
@@ -85,7 +85,7 @@ func (h *ArticleController) UpdateArticle(c echo.Context) error {
 
 // admin-only: DELETE /articles/:id
 func (h *ArticleController) DeleteArticle(c echo.Context) error {
-	if !isAdmin(c) {
+	if !utils.IsAdmin(c) {
 		return utils.ForbiddenResponse(c, "admin only")
 	}
 	idParam := c.Param("id")
@@ -100,13 +100,4 @@ func (h *ArticleController) DeleteArticle(c echo.Context) error {
 		return utils.InternalServerErrorResponse(c, "failed deleting article")
 	}
 	return utils.NoContentResponse(c)
-}
-
-// helpers: admin check (assumes auth middleware sets "is_admin" on context)
-func isAdmin(c echo.Context) bool {
-	v := c.Get("is_admin")
-	if b, ok := v.(bool); ok && b {
-		return true
-	}
-	return false
 }

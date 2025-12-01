@@ -5,9 +5,9 @@ import (
 )
 
 type Donation struct {
-	ID     uint `gorm:"primaryKey;autoIncrement" json:"id"`
-	UserID uint `gorm:"not null" json:"user_id"`
-	// User        User      `gorm:"foreignKey:UserID" json:"user,omitempty"` // Assuming User entity exists elsewhere
+	ID          uint      `gorm:"primaryKey;autoIncrement" json:"id"`
+	UserID      uint      `gorm:"not null" json:"user_id"`
+	User        Users     `gorm:"foreignKey:UserID" json:"user,omitempty"` // Assuming User entity exists elsewhere
 	Title       string    `gorm:"size:255;not null" json:"title"`
 	Description string    `gorm:"type:text" json:"description"`
 	Category    string    `gorm:"size:255" json:"category"`

@@ -7,9 +7,10 @@ import (
 )
 
 type ArticleRepo interface {
-	CreateArticle(article entity.Article) error
 	GetAllArticles() ([]entity.Article, error)
 	GetArticleByID(id uint) (entity.Article, error)
+	// Admin functionalities
+	CreateArticle(article entity.Article) error
 	UpdateArticle(article entity.Article) error
 	DeleteArticle(id uint) error
 }
