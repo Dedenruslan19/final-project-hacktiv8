@@ -13,5 +13,7 @@ type PaymentResponse struct {
 }
 
 type CheckPaymentStatusResponse struct {
-	
+	OrderId string `json:"order_id"`
+	TransactionId string `json:"transaction_id"`
+	PaymentStatus string `json:"payment_status"`
 }

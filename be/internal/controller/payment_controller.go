@@ -11,6 +11,7 @@ import (
 
 type PaymentService interface {
 	CreatePayment(req dto.PaymentRequest, userId int) (res dto.PaymentResponse, err error)
+	CheckPaymentStatusMidtrans(transactionId string) (res dto.CheckPaymentStatusResponse, err error)
 }
 
 type PaymentController struct {
@@ -42,4 +43,14 @@ func (pc *PaymentController) CreatePayment(c echo.Context) error {
 	}
 
 	return utils.CreatedResponse(c, "create", resp)
+}
+
+func (pc *PaymentController) CheckPaymentStatusMidtrans(c echo.Context) error {
+	transactionId := c.Param("id")
+	resp, err := pc.paymentService.CheckPaymentStatusMidtrans(transactionId)
+	if err != nil {
+		return utils.InternalServerErrorResponse(c, "internal server error")
+	}
+
+	return utils.SuccessResponse(c, "ok", resp)
 }

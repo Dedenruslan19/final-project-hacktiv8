@@ -12,4 +12,5 @@ func (r *EchoRouter) RegisterPaymentRoutes(paymentCtrl *controller.PaymentContro
 
 	//payment endpoint
 	paymentRoutes.POST("", paymentCtrl.CreatePayment)
+	paymentRoutes.GET("/:id", paymentCtrl.CheckPaymentStatusMidtrans)
 }

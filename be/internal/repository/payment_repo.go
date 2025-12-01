@@ -58,6 +58,21 @@ func (pr *PaymentRepo) CreateMidtrans(payment entity.Payment, orderId string) (r
 	return resp, nil
 }
 
-func (pr *PaymentRepo) CheckPaymentStatusMidtrans() {
-	
+func (pr *PaymentRepo) CheckPaymentStatusMidtrans(transactionId string) (res dto.CheckPaymentStatusResponse, err error) {
+	serverKey := os.Getenv("MIDTRANS_SERVER_KEY")
+	c := coreapi.Client{}
+	c.New(serverKey, midtrans.Sandbox)	
+
+	resp, _ := c.CheckTransaction(transactionId)
+	// if err != nil {
+	// 	return dto.CheckPaymentStatusResponse{}, err
+	// }
+
+	respon := dto.CheckPaymentStatusResponse{
+		OrderId: resp.OrderID,
+		TransactionId: resp.TransactionID,
+		PaymentStatus: resp.TransactionStatus,
+	}
+
+	return respon, nil
 }

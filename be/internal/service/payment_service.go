@@ -12,6 +12,7 @@ import (
 type PaymentRepository interface {
 	Create(payment *entity.Payment) (error)
 	CreateMidtrans(payment entity.Payment, orderId string) (res dto.PaymentResponse, err error)
+	CheckPaymentStatusMidtrans(transactionId string) (res dto.CheckPaymentStatusResponse, err error)
 }
 
 type PaymentServ struct {
@@ -41,6 +42,12 @@ func (ps *PaymentServ) CreatePayment(req dto.PaymentRequest, userId int) (res dt
 
 	log.Println("disini nih")
 	resp, _ := ps.paymentRepo.CreateMidtrans(payment, orderId)
+
+	return resp, nil
+}
+
+func (ps *PaymentServ) CheckPaymentStatusMidtrans(transactionId string) (res dto.CheckPaymentStatusResponse, err error) {
+	resp, _:= ps.paymentRepo.CheckPaymentStatusMidtrans(transactionId)
 
 	return resp, nil
 }
