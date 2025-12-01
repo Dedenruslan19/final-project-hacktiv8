@@ -5,11 +5,12 @@ import (
 	"milestone3/be/internal/utils"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 )
 
 type PaymentService interface {
-	CreatePayment(req dto.PaymentRequest) (res dto.PaymentResponse, err error)
+	CreatePayment(req dto.PaymentRequest, userId int) (res dto.PaymentResponse, err error)
 }
 
 type PaymentController struct {
@@ -22,6 +23,9 @@ func NewPaymentController(validate *validator.Validate, ps PaymentService) *Paym
 }
 
 func (pc *PaymentController) CreatePayment(c echo.Context) error {
+	user := c.Get("user").(*jwt.Token)
+	claim := user.Claims.(jwt.MapClaims)
+	userId := int(claim["id"].(float64))
 	req := new(dto.PaymentRequest)
 
 	if err := c.Bind(req); err != nil {
@@ -32,7 +36,7 @@ func (pc *PaymentController) CreatePayment(c echo.Context) error {
 		return utils.BadRequestResponse(c, err.Error())
 	}
 
-	resp, err := pc.paymentService.CreatePayment(*req)
+	resp, err := pc.paymentService.CreatePayment(*req, userId)
 	if err != nil {
 		return utils.InternalServerErrorResponse(c, "internal server error")
 	}

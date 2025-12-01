@@ -29,7 +29,7 @@ func (us *UserServ) CreateUser(req dto.UserRequest) (res dto.UserResponse, err e
 		log.Println("error encrypt password")
 		return dto.UserResponse{}, err
 	}
-	
+
 	req.Password = string(passHash)
 
 	user := entity.Users{

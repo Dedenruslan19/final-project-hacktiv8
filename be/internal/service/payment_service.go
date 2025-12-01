@@ -11,7 +11,7 @@ import (
 
 type PaymentRepository interface {
 	Create(payment *entity.Payment) (error)
-	CreateMidtrans(payment entity.Payment) (res dto.PaymentResponse, err error)
+	CreateMidtrans(payment entity.Payment, orderId string) (res dto.PaymentResponse, err error)
 }
 
 type PaymentServ struct {
@@ -22,17 +22,16 @@ func NewPaymentService(pr PaymentRepository) *PaymentServ {
 	return &PaymentServ{paymentRepo: pr}
 }
 
-func (ps *PaymentServ) CreatePayment(req dto.PaymentRequest) (res dto.PaymentResponse, err error) {
+func (ps *PaymentServ) CreatePayment(req dto.PaymentRequest, userId int) (res dto.PaymentResponse, err error) {
 	//random id for order id
 	uuid := uuid.New()
-	orderId := fmt.Sprintf("YDR - %d", uuid.ID())
+	orderId := fmt.Sprintf("YDR-%d", uuid.ID())
 	
 	payment := entity.Payment{
-		OrderId: orderId,
-		Amount: req.GrossAmount,
-		Name: req.Name,
-		Email: req.Email,
-		NoHp: req.NoHp,
+		Amount: req.Amount,
+		UserId: userId,
+		//hard code for now 
+		AuctionItemId: 1,
 	}
 
 	if err := ps.paymentRepo.Create(&payment); err != nil {
@@ -41,7 +40,7 @@ func (ps *PaymentServ) CreatePayment(req dto.PaymentRequest) (res dto.PaymentRes
 	}
 
 	log.Println("disini nih")
-	resp, _ := ps.paymentRepo.CreateMidtrans(payment)
+	resp, _ := ps.paymentRepo.CreateMidtrans(payment, orderId)
 
 	return resp, nil
 }
