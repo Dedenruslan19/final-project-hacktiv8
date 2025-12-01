@@ -1,74 +1,84 @@
 package main
 
 import (
-	"context"
-	"log"
-	"milestone3/be/api/routes"
-	"milestone3/be/config"
-	"milestone3/be/internal/controller"
-	"milestone3/be/internal/repository"
-	"milestone3/be/internal/service"
-	"os"
+    "context"
+    "log"
+    "os"
 
-	"cloud.google.com/go/storage"
-	"github.com/go-playground/validator/v10"
-	"github.com/labstack/echo/v4"
+    "cloud.google.com/go/storage"
+    "github.com/go-playground/validator/v10"
+    "github.com/labstack/echo/v4"
+
+    "milestone3/be/api/routes"
+    "milestone3/be/config"
+    "milestone3/be/internal/controller"
+    "milestone3/be/internal/repository"
+    "milestone3/be/internal/service"
 )
 
 func main() {
+    // context
+    ctx := context.Background()
 
-	db := config.ConnectionDb()
-	validator := validator.New()
-	ctx := context.Background()
+    // config + db
+    db := config.ConnectionDb()
 
-	//dependency injection
-	// create GCS client
-	var gcsRepo repository.GCSStorageRepo
-	if bucket := os.Getenv("GCS_BUCKET"); bucket != "" {
-		gcsClient, err := storage.NewClient(ctx)
-		if err != nil {
-			log.Fatalf("failed to create gcs client: %v", err)
-		}
-		gcsRepo = repository.NewGCSStorageRepo(gcsClient, bucket)
-	} else {
-		log.Println("GCS_BUCKET not set — file uploads to GCS will fail if used")
-	}
-	//repository
-	userRepo := repository.NewUserRepo(db, ctx)
-	articleRepo := repository.NewArticleRepo(db)
-	donationRepo := repository.NewDonationRepo(db)
-	finalDonationRepo := repository.NewFinalDonationRepository(db)
+    // validator
+    validate := validator.New()
 
-	//service
-	userServ := service.NewUserService(userRepo)
-	articleSvc := service.NewArticleService(articleRepo)
-	donationSvc := service.NewDonationService(donationRepo)
-	finalDonationSvc := service.NewFinalDonationService(finalDonationRepo)
+    // create GCS client (requires GOOGLE_APPLICATION_CREDENTIALS env or ADC)
+    var gcsRepo repository.GCSStorageRepo
+    if bucket := os.Getenv("GCS_BUCKET"); bucket != "" {
+        gcsClient, err := storage.NewClient(ctx)
+        if err != nil {
+            log.Fatalf("failed to create gcs client: %v", err)
+        }
+        gcsRepo = repository.NewGCSStorageRepo(gcsClient, bucket)
+    } else {
+        log.Println("GCS_BUCKET not set — file uploads to GCS will fail if used")
+    }
 
-	//controller
-	userControl := controller.NewUserController(validator, userServ)
-	articleCtrl := controller.NewArticleController(articleSvc)
-	// donation controller needs storage repo; pass nil-safe repo if not configured
-	var donationCtrl *controller.DonationController
-	if gcsRepo != nil {
-		donationCtrl = controller.NewDonationController(donationSvc, gcsRepo)
-	} else {
-		// repository package defines interface; create a no-op implementation if needed,
-		// but here we pass nil — ensure controller handles nil storage or set a stub.
-		donationCtrl = controller.NewDonationController(donationSvc, nil)
-	}
-	finalDonationCtrl := controller.NewFinalDonationController(finalDonationSvc)
-	//echo
-	e := echo.New()
-	//router
-	router := routes.NewRouter(e)
-	router.RegisterUserRoutes(userControl)
-	router.RegisterArticleRoutes(articleCtrl)
-	router.RegisterDonationRoutes(donationCtrl)
-	router.RegisterFinalDonationRoutes(finalDonationCtrl)
+    // repositories
+    userRepo := repository.NewUserRepo(db, ctx)
+    articleRepo := repository.NewArticleRepo(db)
+    donationRepo := repository.NewDonationRepo(db)
+    finalDonationRepo := repository.NewFinalDonationRepository(db)
 
-	address := os.Getenv("PORT")
-	if err := e.Start(":" + address); err != nil {
-		log.Printf("faile to start server %s", err)
-	}
+    // services
+    userSvc := service.NewUserService(userRepo)
+    articleSvc := service.NewArticleService(articleRepo)
+    donationSvc := service.NewDonationService(donationRepo)
+    finalDonationSvc := service.NewFinalDonationService(finalDonationRepo)
+
+    // controllers
+    userCtrl := controller.NewUserController(validate, userSvc)
+    articleCtrl := controller.NewArticleController(articleSvc)
+
+    // donation controller needs storage repo; pass nil-safe repo if not configured
+    var donationCtrl *controller.DonationController
+    if gcsRepo != nil {
+        donationCtrl = controller.NewDonationController(donationSvc, gcsRepo)
+    } else {
+        donationCtrl = controller.NewDonationController(donationSvc, nil)
+    }
+    finalDonationCtrl := controller.NewFinalDonationController(finalDonationSvc)
+
+    // echo + router
+    e := echo.New()
+    router := routes.NewRouter(e)
+
+    // register routes (order not strict)
+    router.RegisterUserRoutes(userCtrl)
+    router.RegisterArticleRoutes(articleCtrl)
+    router.RegisterDonationRoutes(donationCtrl)
+    router.RegisterFinalDonationRoutes(finalDonationCtrl)
+
+    // start server
+    port := os.Getenv("PORT")
+    if port == "" {
+        port = "8000"
+    }
+    if err := e.Start(":" + port); err != nil {
+        log.Fatalf("failed to start server: %v", err)
+    }
 }
