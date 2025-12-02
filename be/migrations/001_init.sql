@@ -9,7 +9,7 @@ CREATE TYPE verification_decision AS ENUM ('auction', 'donation');
 
 CREATE TYPE auction_item_status AS ENUM ('scheduled', 'ongoing', 'finished');
 
-CREATE TYPE payment_status AS ENUM ('pending', 'paid', 'failed');
+CREATE TYPE payment_status AS ENUM ('pending', 'paid', 'git');
 
 -- Tables
 CREATE TABLE users (
