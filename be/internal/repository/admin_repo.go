@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"milestone3/be/internal/dto"
 	"milestone3/be/internal/entity"
 
 	"gorm.io/gorm"
@@ -17,26 +16,25 @@ func NewAdminRepository(db *gorm.DB, ctx context.Context) *AdminRepo {
 	return &AdminRepo{db: db, ctx: ctx}
 }
 
-var count int64
 
 //count total transaction
-func (ar *AdminRepo) CountPayment() (resp dto.TotalPayment, err error) {
-var payment entity.Payment
+func (ar *AdminRepo) CountPayment() (count int64, err error) {
+	var payment entity.Payment
 	if err := ar.db.WithContext(ar.ctx).Model(&payment).Count(&count).Error; err != nil {
-		return dto.TotalPayment{}, err
+		return 0, err
 	}
 
-	return resp, nil
+	return count, nil
 }
  
 // //count total donation
-func (ar *AdminRepo) CountDonation() (resp dto.TotalDonation, err error) {
+func (ar *AdminRepo) CountDonation() (count int64, err error) {
 	var donation entity.Donation
 	if err := ar.db.WithContext(ar.ctx).Model(&donation).Count(&count).Error; err != nil {
-		return dto.TotalDonation{}, err
+		return 0, err
 	}
 
-	return resp, nil
+	return count, nil
 }
 
 // count total auction
@@ -51,13 +49,13 @@ func (ar *AdminRepo) CountDonation() (resp dto.TotalDonation, err error) {
 // }
 
 // //count total article
-func (ar *AdminRepo) CountArticle() (resp dto.TotalArticle, err error) {
+func (ar *AdminRepo) CountArticle() (count int64, err error) {
 	var article entity.Article
 	if err := ar.db.WithContext(ar.ctx).Model(&article).Count(&count).Error; err != nil {
-		return dto.TotalArticle{}, err
+		return 0, err
 	}
 
-	return resp, nil
+	return count, nil
 }
 
 // for reporting endpoint //
