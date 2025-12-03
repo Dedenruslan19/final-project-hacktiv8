@@ -1,9 +1,13 @@
 package controller
 
 import (
+	"fmt"
 	"strconv"
+	"strings"
+	"time"
 
 	"milestone3/be/internal/dto"
+	"milestone3/be/internal/repository"
 	"milestone3/be/internal/service"
 	"milestone3/be/internal/utils"
 
@@ -11,11 +15,12 @@ import (
 )
 
 type ArticleController struct {
-	svc service.ArticleService
+	svc           service.ArticleService
+	storagePublic repository.GCPStorageRepo
 }
 
-func NewArticleController(s service.ArticleService) *ArticleController {
-	return &ArticleController{svc: s}
+func NewArticleController(s service.ArticleService, storage repository.GCPStorageRepo) *ArticleController {
+	return &ArticleController{svc: s, storagePublic: storage}
 }
 
 // public: GET /articles
@@ -49,13 +54,56 @@ func (h *ArticleController) CreateArticle(c echo.Context) error {
 	if !utils.IsAdmin(c) {
 		return utils.ForbiddenResponse(c, "admin only")
 	}
+
+	contentType := c.Request().Header.Get("Content-Type")
 	var payload dto.ArticleDTO
-	if err := c.Bind(&payload); err != nil {
-		return utils.BadRequestResponse(c, "invalid payload")
+
+	// if multipart/form-data (with image)
+	if strings.HasPrefix(contentType, "multipart/form-data") {
+		if err := c.Request().ParseMultipartForm(10 << 20); err != nil {
+			return utils.BadRequestResponse(c, "invalid multipart form")
+		}
+
+		form := c.Request().MultipartForm
+
+		payload.Title = form.Value["title"][0]
+		payload.Content = form.Value["content"][0]
+		week, _ := strconv.Atoi(form.Value["week"][0])
+		payload.Week = week
+
+		// handle image (opsional)
+		if fhs, ok := form.File["image"]; ok && len(fhs) > 0 {
+			fh := fhs[0]
+
+			file, err := fh.Open()
+			if err != nil {
+				return utils.BadRequestResponse(c, "failed open image")
+			}
+			defer file.Close()
+
+			objName := fmt.Sprintf("articles/%d_%s", time.Now().UnixNano(), fh.Filename)
+
+			//  upload to public storage
+			url, err := h.storagePublic.UploadFile(c.Request().Context(), file, objName)
+			if err != nil {
+				return utils.InternalServerErrorResponse(c, "failed uploading image")
+			}
+
+			payload.Image = url
+		}
+
+	} else {
+		// support JSON without image
+		if err := c.Bind(&payload); err != nil {
+			return utils.BadRequestResponse(c, "invalid payload")
+		}
 	}
+
+	// send to service
 	if err := h.svc.CreateArticle(payload); err != nil {
 		return utils.InternalServerErrorResponse(c, "failed creating article")
 	}
+
 	return utils.CreatedResponse(c, "article created", nil)
 }
 

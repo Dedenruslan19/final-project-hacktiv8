@@ -21,16 +21,32 @@ func main() {
 	db := config.ConnectionDb()
 	validate := validator.New()
 
-	// create GCS client if configured
-	var gcsRepo repository.GCSStorageRepo
-	if bucket := os.Getenv("GCS_BUCKET"); bucket != "" {
-		gcsClient, err := storage.NewClient(ctx)
+	// GCP PUBLIC BUCKET
+	var gcpPublicRepo repository.GCPStorageRepo
+	publicBucket := os.Getenv("GCS_PUBLIC_BUCKET")
+
+	if publicBucket != "" {
+		client, err := storage.NewClient(ctx)
 		if err != nil {
-			log.Fatalf("failed to create gcs client: %v", err)
+			log.Fatalf("failed to create public gcs client: %v", err)
 		}
-		gcsRepo = repository.NewGCSStorageRepo(gcsClient, bucket)
+		gcpPublicRepo = repository.NewGCPStorageRepo(client, publicBucket, true)
 	} else {
-		log.Println("GCS_BUCKET not set — file uploads to GCS will fail if used")
+		log.Println("GCS_PUBLIC_BUCKET NOT SET")
+	}
+
+	// GCP PRIVATE BUCKET
+	var gcpPrivateRepo repository.GCPStorageRepo
+	privateBucket := os.Getenv("GCS_PRIVATE_BUCKET")
+
+	if privateBucket != "" {
+		client, err := storage.NewClient(ctx)
+		if err != nil {
+			log.Fatalf("failed to create private gcs client: %v", err)
+		}
+		gcpPrivateRepo = repository.NewGCPStorageRepo(client, privateBucket, false)
+	} else {
+		log.Println("GCS_PRIVATE_BUCKET NOT SET")
 	}
 
 	// repositories
@@ -43,17 +59,17 @@ func main() {
 	// services
 	userSvc := service.NewUserService(userRepo)
 	articleSvc := service.NewArticleService(articleRepo)
-	donationSvc := service.NewDonationService(donationRepo)
+	donationSvc := service.NewDonationService(donationRepo, gcpPrivateRepo)
 	finalDonationSvc := service.NewFinalDonationService(finalDonationRepo)
 	paymentSvc := service.NewPaymentService(paymentRepo)
 
 	// controllers
 	userCtrl := controller.NewUserController(validate, userSvc)
-	articleCtrl := controller.NewArticleController(articleSvc)
+	articleCtrl := controller.NewArticleController(articleSvc, gcpPublicRepo)
 
 	var donationCtrl *controller.DonationController
-	if gcsRepo != nil {
-		donationCtrl = controller.NewDonationController(donationSvc, gcsRepo)
+	if gcpPrivateRepo != nil {
+		donationCtrl = controller.NewDonationController(donationSvc, gcpPrivateRepo)
 	} else {
 		donationCtrl = controller.NewDonationController(donationSvc, nil)
 	}
