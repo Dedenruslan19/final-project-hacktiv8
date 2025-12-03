@@ -9,7 +9,7 @@ type AdminRepository interface {
 	CountPayment() (count int64, err error)
 	CountDonation() (count int64, err error)
 	CountArticle() (count int64, err error)
-	// CountAuction() (resp dto.TotalAuction, err error)
+	CountAuction() (count int64, err error)
 }
 
 type AdminServ struct {
@@ -42,16 +42,17 @@ func (as *AdminServ) AdminDashboard() (resp dto.AdminDashboardResponse, err erro
 		return dto.AdminDashboardResponse{}, err
 	}
 
-	// auction, err := as.adminRepo.CountAuction(); 
-	// if err != nil {
-	// 	log.Printf("error count payment %s", &err)
-	// 	return err
-	// }
+	auction, err := as.adminRepo.CountAuction(); 
+	if err != nil {
+		log.Printf("error count payment %s", &err)
+		return dto.AdminDashboardResponse{}, err
+	}
+
 	respon := dto.AdminDashboardResponse{
 		TotalArticle: article,
 		TotalDonation: donation,
 		TotalPayment: payment,
-		// TotalAuction: auction.Count,
+		TotalAuction: auction,
 	}
 
 	return respon, nil

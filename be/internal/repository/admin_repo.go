@@ -39,14 +39,14 @@ func (ar *AdminRepo) CountDonation() (count int64, err error) {
 
 // count total auction
 // work in progress (WIP)
-// func (ar *AdminRepo) CountAuction() (resp dto.TotalAuction, err error) {
-// var auction entitiy.Auction
-// if err := ar.db.WithContext(ar.ctx).Model(&auction).Count(&count).Error; err != nil {
-// 		return dto.TotalAuction{}, err
-// }
-// 
-// return resp, nil
-// }
+func (ar *AdminRepo) CountAuction() (count int64, err error) {
+	var auction entity.AuctionItem
+	if err := ar.db.WithContext(ar.ctx).Model(&auction).Count(&count).Error; err != nil {
+			return 0, err
+	}
+
+	return count, nil
+}
 
 // //count total article
 func (ar *AdminRepo) CountArticle() (count int64, err error) {

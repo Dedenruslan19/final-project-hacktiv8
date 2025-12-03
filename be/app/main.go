@@ -75,13 +75,13 @@ func main() {
 	finalDonationSvc := service.NewFinalDonationService(finalDonationRepo)
 	paymentSvc := service.NewPaymentService(paymentRepo)
 	adminSvc := service.NewAdminService(adminRepo)
+	bidSvc := service.NewBidService(redisRepo, bidRepo, auctionItemRepo, logger)
+	auctionSvc := service.NewAuctionItemService(auctionItemRepo, aiRepo, logger)
 
 	// controllers
 	userCtrl := controller.NewUserController(validate, userSvc)
 	adminCtrl := controller.NewAdminController(adminSvc)
-	auctionSvc := service.NewAuctionItemService(auctionItemRepo, aiRepo, logger)
 	auctionSessionSvc := service.NewAuctionSessionService(auctionSessionRepo, auctionRedisRepo, logger)
-	bidSvc := service.NewBidService(redisRepo, bidRepo, auctionItemRepo, logger)
 	articleCtrl := controller.NewArticleController(articleSvc, gcpPublicRepo)
 
 	var donationCtrl *controller.DonationController

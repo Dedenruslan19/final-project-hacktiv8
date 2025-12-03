@@ -37,3 +37,8 @@ func (ac *AdminController) AdminDashboard(c echo.Context) error {
 
 	return utils.SuccessResponse(c, "ok", resp)
 }
+
+// WIP
+// func (ac *AdminController) AdminReport(c echo.Context) error {
+
+// }

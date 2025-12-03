@@ -20,7 +20,7 @@ type AdminDashboardResponse struct {
 	TotalArticle int64 `json:"total_article"`
 	TotalDonation int64 `json:"total_donation"`
 	TotalPayment int64 `json:"total_payment"`
-	// TotalAuction int64 `json:"total_auction"`
+	TotalAuction int64 `json:"total_auction"`
 }
 
 // type AdminReportResponse struct { 

@@ -77,7 +77,7 @@ func (ps *PaymentServ) GetPaymentById(id int) (res dto.PaymentInfoResponse, err 
 func (ps *PaymentServ) GetAllPayment() (res []dto.PaymentInfoResponse, err error) {
 	resp, err := ps.paymentRepo.GetAll()
 	if err != nil {
-		log.Println("failed get all payment info %s", err)
+		log.Printf("failed get all payment info %s", err)
 		return []dto.PaymentInfoResponse{}, err
 	}
 
