@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"milestone3/be/internal/dto"
+	"milestone3/be/internal/entity"
 	"milestone3/be/internal/repository"
 	"milestone3/be/internal/service"
 	"milestone3/be/internal/utils"
@@ -42,7 +43,7 @@ func (h *DonationController) CreateDonation(c echo.Context) error {
 		payload.Condition = form.Value["condition"][0]
 
 		if v, ok := form.Value["status"]; ok {
-			payload.Status = v[0]
+			payload.Status = entity.StatusDonation(v[0])
 		}
 
 		// FILE HANDLING PRIVATE ONLY
