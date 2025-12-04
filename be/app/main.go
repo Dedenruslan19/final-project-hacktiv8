@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"log/slog"
 	"os"
 
 	"cloud.google.com/go/storage"
@@ -15,6 +16,9 @@ import (
 	"milestone3/be/internal/repository"
 	"milestone3/be/internal/service"
 )
+
+var loggerOption = slog.HandlerOptions{AddSource: true}
+var logger = slog.New(slog.NewJSONHandler(os.Stdout, &loggerOption))
 
 func main() {
 	ctx := context.Background()
@@ -55,6 +59,14 @@ func main() {
 	donationRepo := repository.NewDonationRepo(db)
 	finalDonationRepo := repository.NewFinalDonationRepository(db)
 	paymentRepo := repository.NewPaymentRepository(db, ctx)
+	adminRepo := repository.NewAdminRepository(db, ctx)
+	auctionItemRepo := repository.NewAuctionItemRepository(db)
+	auctionSessionRepo := repository.NewAuctionSessionRepository(db)
+	bidRepo := repository.NewBidRepository(db)
+	redisClient := config.ConnectRedis(ctx)
+	redisRepo := repository.NewBidRedisRepository(redisClient, ctx)
+	auctionRedisRepo := repository.NewSessionRedisRepository(redisClient, ctx)
+	aiRepo := repository.NewAIRepository(logger, os.Getenv("GEMINI_API_KEY"))
 
 	// services
 	userSvc := service.NewUserService(userRepo)
@@ -62,9 +74,14 @@ func main() {
 	donationSvc := service.NewDonationService(donationRepo, gcpPrivateRepo)
 	finalDonationSvc := service.NewFinalDonationService(finalDonationRepo)
 	paymentSvc := service.NewPaymentService(paymentRepo)
+	adminSvc := service.NewAdminService(adminRepo)
+	bidSvc := service.NewBidService(redisRepo, bidRepo, auctionItemRepo, logger)
+	auctionSvc := service.NewAuctionItemService(auctionItemRepo, aiRepo, logger)
 
 	// controllers
 	userCtrl := controller.NewUserController(validate, userSvc)
+	adminCtrl := controller.NewAdminController(adminSvc)
+	auctionSessionSvc := service.NewAuctionSessionService(auctionSessionRepo, auctionRedisRepo, logger)
 	articleCtrl := controller.NewArticleController(articleSvc, gcpPublicRepo)
 
 	var donationCtrl *controller.DonationController
@@ -75,6 +92,9 @@ func main() {
 	}
 	finalDonationCtrl := controller.NewFinalDonationController(finalDonationSvc)
 	paymentCtrl := controller.NewPaymentController(validate, paymentSvc)
+	auctionCtrl := controller.NewAuctionController(auctionSvc, validate)
+	auctionSessionCtrl := controller.NewAuctionSessionController(auctionSessionSvc, validate)
+	bidCtrl := controller.NewBidController(bidSvc, auctionSessionSvc, validate)
 
 	// echo + router
 	e := echo.New()
@@ -85,6 +105,10 @@ func main() {
 	router.RegisterDonationRoutes(donationCtrl)
 	router.RegisterFinalDonationRoutes(finalDonationCtrl)
 	router.RegisterPaymentRoutes(paymentCtrl)
+	router.RegisterAdminRoutes(adminCtrl)
+	router.RegisterAuctionRoutes(auctionCtrl)
+	router.RegisterAuctionSessionRoutes(auctionSessionCtrl)
+	router.RegisterBidRoutes(bidCtrl)
 
 	port := os.Getenv("PORT")
 	if port == "" {
