@@ -59,14 +59,13 @@ func main() {
 	donationRepo := repository.NewDonationRepo(db)
 	finalDonationRepo := repository.NewFinalDonationRepository(db)
 	paymentRepo := repository.NewPaymentRepository(db, ctx)
+	adminRepo := repository.NewAdminRepository(db, ctx)
 	auctionItemRepo := repository.NewAuctionItemRepository(db)
 	auctionSessionRepo := repository.NewAuctionSessionRepository(db)
 	bidRepo := repository.NewBidRepository(db)
-
 	redisClient := config.ConnectRedis(ctx)
 	redisRepo := repository.NewBidRedisRepository(redisClient, ctx)
 	auctionRedisRepo := repository.NewSessionRedisRepository(redisClient, ctx)
-
 	aiRepo := repository.NewAIRepository(logger, os.Getenv("GEMINI_API_KEY"))
 
 	// services
@@ -75,12 +74,14 @@ func main() {
 	donationSvc := service.NewDonationService(donationRepo, gcpPrivateRepo)
 	finalDonationSvc := service.NewFinalDonationService(finalDonationRepo)
 	paymentSvc := service.NewPaymentService(paymentRepo)
-	auctionSvc := service.NewAuctionItemService(auctionItemRepo, aiRepo, logger)
-	auctionSessionSvc := service.NewAuctionSessionService(auctionSessionRepo, auctionRedisRepo, logger)
+	adminSvc := service.NewAdminService(adminRepo)
 	bidSvc := service.NewBidService(redisRepo, bidRepo, auctionItemRepo, logger)
+	auctionSvc := service.NewAuctionItemService(auctionItemRepo, aiRepo, logger)
 
 	// controllers
 	userCtrl := controller.NewUserController(validate, userSvc)
+	adminCtrl := controller.NewAdminController(adminSvc)
+	auctionSessionSvc := service.NewAuctionSessionService(auctionSessionRepo, auctionRedisRepo, logger)
 	articleCtrl := controller.NewArticleController(articleSvc, gcpPublicRepo)
 
 	var donationCtrl *controller.DonationController
@@ -104,6 +105,7 @@ func main() {
 	router.RegisterDonationRoutes(donationCtrl)
 	router.RegisterFinalDonationRoutes(finalDonationCtrl)
 	router.RegisterPaymentRoutes(paymentCtrl)
+	router.RegisterAdminRoutes(adminCtrl)
 	router.RegisterAuctionRoutes(auctionCtrl)
 	router.RegisterAuctionSessionRoutes(auctionSessionCtrl)
 	router.RegisterBidRoutes(bidCtrl)
