@@ -7,6 +7,7 @@ import (
 
 func (r *EchoRouter) RegisterDonationRoutes(donationCtrl *controller.DonationController) {
 	donationRoutes := r.echo.Group("/donations")
+	donationRoutes.Use(middleware.JWTMiddleware)
 
 	// public
 	donationRoutes.GET("", donationCtrl.GetAllDonations)
