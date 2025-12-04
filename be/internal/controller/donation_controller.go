@@ -38,10 +38,10 @@ func NewDonationController(s service.DonationService, privateStore repository.GC
 // @Param category formData string true "Donation category"
 // @Param condition formData string true "Item condition"
 // @Param photos formData file false "Donation photos (multiple files allowed)"
-// @Success 201 {object} utils.Response "Donation created successfully"
-// @Failure 400 {object} utils.Response "Bad request - Invalid payload or file upload"
-// @Failure 401 {object} utils.Response "Unauthorized - Invalid or missing token"
-// @Failure 500 {object} utils.Response "Internal server error"
+// @Success 201 {object} utils.SuccessResponseData "Donation created successfully"
+// @Failure 400 {object} utils.ErrorResponse "Bad request - Invalid payload or file upload"
+// @Failure 401 {object} utils.ErrorResponse "Unauthorized - Invalid or missing token"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
 // @Router /donations [post]
 func (h *DonationController) CreateDonation(c echo.Context) error {
 	var payload dto.DonationDTO
@@ -110,9 +110,9 @@ func (h *DonationController) CreateDonation(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Success 200 {object} utils.Response "Donations retrieved successfully"
-// @Failure 401 {object} utils.Response "Unauthorized - Invalid or missing token"
-// @Failure 500 {object} utils.Response "Internal server error"
+// @Success 200 {object} utils.SuccessResponseData "Donations retrieved successfully"
+// @Failure 401 {object} utils.ErrorResponse "Unauthorized - Invalid or missing token"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
 // @Router /donations [get]
 func (h *DonationController) GetAllDonations(c echo.Context) error {
 	userID, _ := utils.GetUserID(c) // unauthenticated => 0,false
@@ -140,12 +140,12 @@ func (h *DonationController) GetAllDonations(c echo.Context) error {
 // @Produce json
 // @Security BearerAuth
 // @Param id path int true "Donation ID"
-// @Success 200 {object} utils.Response "Donation retrieved successfully"
-// @Failure 400 {object} utils.Response "Bad request - Invalid donation ID"
-// @Failure 401 {object} utils.Response "Unauthorized - Invalid or missing token"
-// @Failure 403 {object} utils.Response "Forbidden - Access denied"
-// @Failure 404 {object} utils.Response "Donation not found"
-// @Failure 500 {object} utils.Response "Internal server error"
+// @Success 200 {object} utils.SuccessResponseData "Donation retrieved successfully"
+// @Failure 400 {object} utils.ErrorResponse "Bad request - Invalid donation ID"
+// @Failure 401 {object} utils.ErrorResponse "Unauthorized - Invalid or missing token"
+// @Failure 403 {object} utils.ErrorResponse "Forbidden - Access denied"
+// @Failure 404 {object} utils.ErrorResponse "Donation not found"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
 // @Router /donations/{id} [get]
 func (h *DonationController) GetDonationByID(c echo.Context) error {
 	idParam := c.Param("id")
@@ -185,12 +185,12 @@ func (h *DonationController) GetDonationByID(c echo.Context) error {
 // @Security BearerAuth
 // @Param id path int true "Donation ID"
 // @Param donation body dto.DonationDTO true "Updated donation data"
-// @Success 200 {object} utils.Response "Donation updated successfully"
-// @Failure 400 {object} utils.Response "Bad request - Invalid ID or payload"
-// @Failure 401 {object} utils.Response "Unauthorized - Invalid or missing token"
-// @Failure 403 {object} utils.Response "Forbidden - Access denied"
-// @Failure 404 {object} utils.Response "Donation not found"
-// @Failure 500 {object} utils.Response "Internal server error"
+// @Success 200 {object} utils.SuccessResponseData "Donation updated successfully"
+// @Failure 400 {object} utils.ErrorResponse "Bad request - Invalid ID or payload"
+// @Failure 401 {object} utils.ErrorResponse "Unauthorized - Invalid or missing token"
+// @Failure 403 {object} utils.ErrorResponse "Forbidden - Access denied"
+// @Failure 404 {object} utils.ErrorResponse "Donation not found"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
 // @Router /donations/{id} [put]
 func (h *DonationController) UpdateDonation(c echo.Context) error {
 	idParam := c.Param("id")
@@ -232,11 +232,11 @@ func (h *DonationController) UpdateDonation(c echo.Context) error {
 // @Security BearerAuth
 // @Param id path int true "Donation ID"
 // @Success 204 "Donation deleted successfully"
-// @Failure 400 {object} utils.Response "Bad request - Invalid donation ID"
-// @Failure 401 {object} utils.Response "Unauthorized - Invalid or missing token"
-// @Failure 403 {object} utils.Response "Forbidden - Access denied"
-// @Failure 404 {object} utils.Response "Donation not found"
-// @Failure 500 {object} utils.Response "Internal server error"
+// @Failure 400 {object} utils.ErrorResponse "Bad request - Invalid donation ID"
+// @Failure 401 {object} utils.ErrorResponse "Unauthorized - Invalid or missing token"
+// @Failure 403 {object} utils.ErrorResponse "Forbidden - Access denied"
+// @Failure 404 {object} utils.ErrorResponse "Donation not found"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
 // @Router /donations/{id} [delete]
 func (h *DonationController) DeleteDonation(c echo.Context) error {
 	idParam := c.Param("id")
@@ -272,12 +272,12 @@ func (h *DonationController) DeleteDonation(c echo.Context) error {
 // @Security BearerAuth
 // @Param id path int true "Donation ID"
 // @Param donation body dto.DonationDTO true "Partial donation data"
-// @Success 200 {object} utils.Response "Donation patched successfully"
-// @Failure 400 {object} utils.Response "Bad request - Invalid ID or payload"
-// @Failure 401 {object} utils.Response "Unauthorized - Invalid or missing token"
-// @Failure 403 {object} utils.Response "Forbidden - Access denied"
-// @Failure 404 {object} utils.Response "Donation not found"
-// @Failure 500 {object} utils.Response "Internal server error"
+// @Success 200 {object} utils.SuccessResponseData "Donation patched successfully"
+// @Failure 400 {object} utils.ErrorResponse "Bad request - Invalid ID or payload"
+// @Failure 401 {object} utils.ErrorResponse "Unauthorized - Invalid or missing token"
+// @Failure 403 {object} utils.ErrorResponse "Forbidden - Access denied"
+// @Failure 404 {object} utils.ErrorResponse "Donation not found"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
 // @Router /donations/{id} [patch]
 func (h *DonationController) PatchDonation(c echo.Context) error {
 	idParam := c.Param("id")

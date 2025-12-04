@@ -137,11 +137,29 @@ definitions:
     - name
     - password
     type: object
-  utils.Response:
+  dto.UserResponse:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      role:
+        type: string
+    type: object
+  utils.ErrorResponse:
+    properties:
+      message:
+        type: string
+      status:
+        example: error
+        type: string
+    type: object
+  utils.SuccessResponseData:
     properties:
       data: {}
       message:
-        example: Operation completed successfully
         type: string
       status:
         example: success
@@ -175,19 +193,19 @@ paths:
         "200":
           description: Dashboard data retrieved successfully
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.SuccessResponseData'
         "401":
           description: Unauthorized - Invalid or missing token
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "403":
           description: Forbidden - Admin access required
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Get admin dashboard analytics
@@ -204,11 +222,11 @@ paths:
         "200":
           description: Articles retrieved successfully
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.SuccessResponseData'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
       summary: Get all transparency articles
       tags:
       - Your Donate Rise API - Articles
@@ -243,23 +261,23 @@ paths:
         "201":
           description: Article created successfully
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.SuccessResponseData'
         "400":
           description: Bad request - Invalid payload or image
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "401":
           description: Unauthorized - Invalid or missing token
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "403":
           description: Forbidden - Admin access required
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Create new transparency article
@@ -284,23 +302,23 @@ paths:
         "400":
           description: Bad request - Invalid article ID
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "401":
           description: Unauthorized - Invalid or missing token
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "403":
           description: Forbidden - Admin access required
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "404":
           description: Article not found
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Delete article
@@ -322,19 +340,19 @@ paths:
         "200":
           description: Article retrieved successfully
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.SuccessResponseData'
         "400":
           description: Bad request - Invalid article ID
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "404":
           description: Article not found
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
       summary: Get article by ID
       tags:
       - Your Donate Rise API - Articles
@@ -360,27 +378,27 @@ paths:
         "200":
           description: Article updated successfully
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.SuccessResponseData'
         "400":
           description: Bad request - Invalid ID or payload
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "401":
           description: Unauthorized - Invalid or missing token
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "403":
           description: Forbidden - Admin access required
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "404":
           description: Article not found
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Update existing article
@@ -397,11 +415,11 @@ paths:
         "200":
           description: Auction items retrieved successfully
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.SuccessResponseData'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
       summary: Get all auction items
       tags:
       - Your Donate Rise API - Auction Items
@@ -422,23 +440,23 @@ paths:
         "201":
           description: Auction item created successfully
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.SuccessResponseData'
         "400":
           description: Bad request - Invalid payload
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "401":
           description: Unauthorized - Invalid or missing token
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "403":
           description: Forbidden - Admin access required
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Create new auction item
@@ -461,27 +479,27 @@ paths:
         "200":
           description: Auction item deleted successfully
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.SuccessResponseData'
         "400":
           description: Bad request - Invalid ID or cannot delete item
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "401":
           description: Unauthorized - Invalid or missing token
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "403":
           description: Forbidden - Admin access required
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "404":
           description: Auction item not found
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Delete auction item
@@ -503,19 +521,19 @@ paths:
         "200":
           description: Auction item retrieved successfully
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.SuccessResponseData'
         "400":
           description: Bad request - Invalid auction item ID
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "404":
           description: Auction item not found
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
       summary: Get auction item by ID
       tags:
       - Your Donate Rise API - Auction Items
@@ -541,27 +559,27 @@ paths:
         "200":
           description: Auction item updated successfully
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.SuccessResponseData'
         "400":
           description: Bad request - Invalid ID or payload
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "401":
           description: Unauthorized - Invalid or missing token
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "403":
           description: Forbidden - Admin access required
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "404":
           description: Auction item not found
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Update auction item
@@ -578,15 +596,15 @@ paths:
         "200":
           description: Auction sessions retrieved successfully
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.SuccessResponseData'
         "404":
           description: No auction sessions found
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
       summary: Get all auction sessions
       tags:
       - Your Donate Rise API - Auction Sessions
@@ -607,23 +625,23 @@ paths:
         "201":
           description: Auction session created successfully
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.SuccessResponseData'
         "400":
           description: Bad request - Invalid payload
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "401":
           description: Unauthorized - Invalid or missing token
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "403":
           description: Forbidden - Admin access required
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Create new auction session
@@ -646,27 +664,27 @@ paths:
         "200":
           description: Auction session deleted successfully
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.SuccessResponseData'
         "400":
           description: Bad request - Invalid ID or session is active
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "401":
           description: Unauthorized - Invalid or missing token
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "403":
           description: Forbidden - Admin access required
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "404":
           description: Auction session not found
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Delete auction session
@@ -688,19 +706,19 @@ paths:
         "200":
           description: Auction session retrieved successfully
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.SuccessResponseData'
         "400":
           description: Bad request - Invalid auction session ID
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "404":
           description: Auction session not found
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
       summary: Get auction session by ID
       tags:
       - Your Donate Rise API - Auction Sessions
@@ -726,27 +744,27 @@ paths:
         "200":
           description: Auction session updated successfully
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.SuccessResponseData'
         "400":
           description: Bad request - Invalid ID, payload, or session is active
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "401":
           description: Unauthorized - Invalid or missing token
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "403":
           description: Forbidden - Admin access required
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "404":
           description: Auction session not found
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Update auction session
@@ -780,27 +798,27 @@ paths:
         "200":
           description: Bid placed successfully
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.SuccessResponseData'
         "400":
           description: Bad request - Invalid parameters or bid too low
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "401":
           description: Unauthorized - Invalid or missing token
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "404":
           description: Auction session or item not found
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "409":
           description: Conflict - Invalid auction state
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Place bid on auction item
@@ -828,19 +846,19 @@ paths:
         "200":
           description: Highest bid retrieved successfully
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.SuccessResponseData'
         "400":
           description: Bad request - Invalid session or item ID
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "404":
           description: Auction not found
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
       summary: Get highest bid for auction item
       tags:
       - Your Donate Rise API - Bidding
@@ -866,23 +884,23 @@ paths:
         "200":
           description: Highest bid synced to database
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.SuccessResponseData'
         "400":
           description: Bad request - Invalid session or item ID
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "401":
           description: Unauthorized - Invalid or missing token
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "403":
           description: Forbidden - Admin access required
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Sync highest bid to database
@@ -906,19 +924,24 @@ paths:
         "200":
           description: Login successful, returns access token
           schema:
-            $ref: '#/definitions/utils.Response'
+            allOf:
+            - $ref: '#/definitions/utils.SuccessResponseData'
+            - properties:
+                data:
+                  type: string
+              type: object
         "400":
           description: Bad request - Invalid credentials format
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "401":
           description: Unauthorized - Invalid email or password
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
       summary: User login
       tags:
       - Your Donate Rise API - Authentication
@@ -940,15 +963,20 @@ paths:
         "201":
           description: User created successfully
           schema:
-            $ref: '#/definitions/utils.Response'
+            allOf:
+            - $ref: '#/definitions/utils.SuccessResponseData'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.UserResponse'
+              type: object
         "400":
           description: Bad request - Invalid payload or validation error
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
       summary: Register new user
       tags:
       - Your Donate Rise API - Authentication
@@ -963,15 +991,15 @@ paths:
         "200":
           description: Donations retrieved successfully
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.SuccessResponseData'
         "401":
           description: Unauthorized - Invalid or missing token
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Get all donations
@@ -1013,19 +1041,19 @@ paths:
         "201":
           description: Donation created successfully
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.SuccessResponseData'
         "400":
           description: Bad request - Invalid payload or file upload
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "401":
           description: Unauthorized - Invalid or missing token
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Create new donation
@@ -1050,23 +1078,23 @@ paths:
         "400":
           description: Bad request - Invalid donation ID
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "401":
           description: Unauthorized - Invalid or missing token
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "403":
           description: Forbidden - Access denied
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "404":
           description: Donation not found
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Delete donation
@@ -1088,27 +1116,27 @@ paths:
         "200":
           description: Donation retrieved successfully
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.SuccessResponseData'
         "400":
           description: Bad request - Invalid donation ID
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "401":
           description: Unauthorized - Invalid or missing token
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "403":
           description: Forbidden - Access denied
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "404":
           description: Donation not found
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Get donation by ID
@@ -1136,27 +1164,27 @@ paths:
         "200":
           description: Donation patched successfully
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.SuccessResponseData'
         "400":
           description: Bad request - Invalid ID or payload
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "401":
           description: Unauthorized - Invalid or missing token
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "403":
           description: Forbidden - Access denied
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "404":
           description: Donation not found
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Partially update donation
@@ -1184,27 +1212,27 @@ paths:
         "200":
           description: Donation updated successfully
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.SuccessResponseData'
         "400":
           description: Bad request - Invalid ID or payload
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "401":
           description: Unauthorized - Invalid or missing token
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "403":
           description: Forbidden - Access denied
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "404":
           description: Donation not found
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Update donation
@@ -1221,11 +1249,11 @@ paths:
         "200":
           description: Final donations retrieved successfully
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.SuccessResponseData'
         "400":
           description: Bad request - Failed to fetch final donations
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
       summary: Get all final donations
       tags:
       - Your Donate Rise API - Final Donations
@@ -1246,11 +1274,11 @@ paths:
         "200":
           description: Final donations retrieved successfully
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.SuccessResponseData'
         "400":
           description: Bad request - Invalid user ID or failed to fetch
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
       summary: Get final donations by user ID
       tags:
       - Your Donate Rise API - Final Donations
@@ -1265,11 +1293,11 @@ paths:
         "200":
           description: Payments retrieved successfully
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.SuccessResponseData'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
       summary: Get all payments
       tags:
       - Your Donate Rise API - Payments
@@ -1290,15 +1318,15 @@ paths:
         "200":
           description: Payment retrieved successfully
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.SuccessResponseData'
         "400":
           description: Bad request - Invalid payment ID
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
       summary: Get payment by ID
       tags:
       - Your Donate Rise API - Payments
@@ -1325,19 +1353,19 @@ paths:
         "201":
           description: Payment created successfully
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.SuccessResponseData'
         "400":
           description: Bad request - Invalid payload or auction ID
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "401":
           description: Unauthorized - Invalid or missing token
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Create payment for auction item
@@ -1360,11 +1388,11 @@ paths:
         "200":
           description: Payment status retrieved successfully
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.SuccessResponseData'
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ErrorResponse'
       summary: Check payment status via Midtrans
       tags:
       - Your Donate Rise API - Payments

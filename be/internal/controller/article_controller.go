@@ -29,8 +29,8 @@ func NewArticleController(s service.ArticleService, storage repository.GCPStorag
 // @Tags Your Donate Rise API - Articles
 // @Accept json
 // @Produce json
-// @Success 200 {object} utils.Response "Articles retrieved successfully"
-// @Failure 500 {object} utils.Response "Internal server error"
+// @Success 200 {object} utils.SuccessResponseData "Articles retrieved successfully"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
 // @Router /articles [get]
 func (h *ArticleController) GetAllArticles(c echo.Context) error {
 	articles, err := h.svc.GetAllArticles()
@@ -47,10 +47,10 @@ func (h *ArticleController) GetAllArticles(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Param id path int true "Article ID"
-// @Success 200 {object} utils.Response "Article retrieved successfully"
-// @Failure 400 {object} utils.Response "Bad request - Invalid article ID"
-// @Failure 404 {object} utils.Response "Article not found"
-// @Failure 500 {object} utils.Response "Internal server error"
+// @Success 200 {object} utils.SuccessResponseData "Article retrieved successfully"
+// @Failure 400 {object} utils.ErrorResponse "Bad request - Invalid article ID"
+// @Failure 404 {object} utils.ErrorResponse "Article not found"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
 // @Router /articles/{id} [get]
 func (h *ArticleController) GetArticleByID(c echo.Context) error {
 	idParam := c.Param("id")
@@ -80,11 +80,11 @@ func (h *ArticleController) GetArticleByID(c echo.Context) error {
 // @Param content formData string true "Article content"
 // @Param week formData int true "Week number"
 // @Param image formData file false "Article image (optional)"
-// @Success 201 {object} utils.Response "Article created successfully"
-// @Failure 400 {object} utils.Response "Bad request - Invalid payload or image"
-// @Failure 401 {object} utils.Response "Unauthorized - Invalid or missing token"
-// @Failure 403 {object} utils.Response "Forbidden - Admin access required"
-// @Failure 500 {object} utils.Response "Internal server error"
+// @Success 201 {object} utils.SuccessResponseData "Article created successfully"
+// @Failure 400 {object} utils.ErrorResponse "Bad request - Invalid payload or image"
+// @Failure 401 {object} utils.ErrorResponse "Unauthorized - Invalid or missing token"
+// @Failure 403 {object} utils.ErrorResponse "Forbidden - Admin access required"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
 // @Router /articles [post]
 func (h *ArticleController) CreateArticle(c echo.Context) error {
 	if !utils.IsAdmin(c) {
@@ -152,12 +152,12 @@ func (h *ArticleController) CreateArticle(c echo.Context) error {
 // @Security BearerAuth
 // @Param id path int true "Article ID"
 // @Param article body dto.ArticleDTO true "Updated article data"
-// @Success 200 {object} utils.Response "Article updated successfully"
-// @Failure 400 {object} utils.Response "Bad request - Invalid ID or payload"
-// @Failure 401 {object} utils.Response "Unauthorized - Invalid or missing token"
-// @Failure 403 {object} utils.Response "Forbidden - Admin access required"
-// @Failure 404 {object} utils.Response "Article not found"
-// @Failure 500 {object} utils.Response "Internal server error"
+// @Success 200 {object} utils.SuccessResponseData "Article updated successfully"
+// @Failure 400 {object} utils.ErrorResponse "Bad request - Invalid ID or payload"
+// @Failure 401 {object} utils.ErrorResponse "Unauthorized - Invalid or missing token"
+// @Failure 403 {object} utils.ErrorResponse "Forbidden - Admin access required"
+// @Failure 404 {object} utils.ErrorResponse "Article not found"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
 // @Router /articles/{id} [put]
 func (h *ArticleController) UpdateArticle(c echo.Context) error {
 	if !utils.IsAdmin(c) {
@@ -191,11 +191,11 @@ func (h *ArticleController) UpdateArticle(c echo.Context) error {
 // @Security BearerAuth
 // @Param id path int true "Article ID"
 // @Success 204 "Article deleted successfully"
-// @Failure 400 {object} utils.Response "Bad request - Invalid article ID"
-// @Failure 401 {object} utils.Response "Unauthorized - Invalid or missing token"
-// @Failure 403 {object} utils.Response "Forbidden - Admin access required"
-// @Failure 404 {object} utils.Response "Article not found"
-// @Failure 500 {object} utils.Response "Internal server error"
+// @Failure 400 {object} utils.ErrorResponse "Bad request - Invalid article ID"
+// @Failure 401 {object} utils.ErrorResponse "Unauthorized - Invalid or missing token"
+// @Failure 403 {object} utils.ErrorResponse "Forbidden - Admin access required"
+// @Failure 404 {object} utils.ErrorResponse "Article not found"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
 // @Router /articles/{id} [delete]
 func (h *ArticleController) DeleteArticle(c echo.Context) error {
 	if !utils.IsAdmin(c) {

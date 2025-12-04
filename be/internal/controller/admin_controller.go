@@ -28,10 +28,10 @@ func NewAdminController(as AdminService) *AdminController {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Success 200 {object} utils.Response "Dashboard data retrieved successfully"
-// @Failure 401 {object} utils.Response "Unauthorized - Invalid or missing token"
-// @Failure 403 {object} utils.Response "Forbidden - Admin access required"
-// @Failure 500 {object} utils.Response "Internal server error"
+// @Success 200 {object} utils.SuccessResponseData "Dashboard data retrieved successfully"
+// @Failure 401 {object} utils.ErrorResponse "Unauthorized - Invalid or missing token"
+// @Failure 403 {object} utils.ErrorResponse "Forbidden - Admin access required"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
 // @Router /admin/dashboard [get]
 func (ac *AdminController) AdminDashboard(c echo.Context) error {
 	user := c.Get("user").(*jwt.Token)

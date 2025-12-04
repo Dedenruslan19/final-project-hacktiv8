@@ -29,9 +29,9 @@ func NewUserController(validate *validator.Validate, us UserService) *UserContro
 // @Accept json
 // @Produce json
 // @Param user body dto.UserRequest true "User registration data"
-// @Success 201 {object} utils.Response "User created successfully"
-// @Failure 400 {object} utils.Response "Bad request - Invalid payload or validation error"
-// @Failure 500 {object} utils.Response "Internal server error"
+// @Success 201 {object} utils.SuccessResponseData{data=dto.UserResponse} "User created successfully"
+// @Failure 400 {object} utils.ErrorResponse "Bad request - Invalid payload or validation error"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
 // @Router /auth/register [post]
 func (uc *UserController) CreateUser(c echo.Context) error {
 	req := new(dto.UserRequest)
@@ -59,10 +59,10 @@ func (uc *UserController) CreateUser(c echo.Context) error {
 // @Accept json
 // @Produce json
 // @Param credentials body dto.UserLoginRequest true "User login credentials"
-// @Success 200 {object} utils.Response "Login successful, returns access token"
-// @Failure 400 {object} utils.Response "Bad request - Invalid credentials format"
-// @Failure 401 {object} utils.Response "Unauthorized - Invalid email or password"
-// @Failure 500 {object} utils.Response "Internal server error"
+// @Success 200 {object} utils.SuccessResponseData{data=string} "Login successful, returns access token"
+// @Failure 400 {object} utils.ErrorResponse "Bad request - Invalid credentials format"
+// @Failure 401 {object} utils.ErrorResponse "Unauthorized - Invalid email or password"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
 // @Router /auth/login [post]
 func (uc *UserController) LoginUser(c echo.Context) error {
 	req := new(dto.UserLoginRequest)

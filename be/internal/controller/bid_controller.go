@@ -65,12 +65,12 @@ func isAdminFromToken(c echo.Context) bool {
 // @Param sessionID path int true "Auction Session ID"
 // @Param itemID path int true "Auction Item ID"
 // @Param bid body dto.BidDTO true "Bid amount"
-// @Success 200 {object} utils.Response "Bid placed successfully"
-// @Failure 400 {object} utils.Response "Bad request - Invalid parameters or bid too low"
-// @Failure 401 {object} utils.Response "Unauthorized - Invalid or missing token"
-// @Failure 404 {object} utils.Response "Auction session or item not found"
-// @Failure 409 {object} utils.Response "Conflict - Invalid auction state"
-// @Failure 500 {object} utils.Response "Internal server error"
+// @Success 200 {object} utils.SuccessResponseData "Bid placed successfully"
+// @Failure 400 {object} utils.ErrorResponse "Bad request - Invalid parameters or bid too low"
+// @Failure 401 {object} utils.ErrorResponse "Unauthorized - Invalid or missing token"
+// @Failure 404 {object} utils.ErrorResponse "Auction session or item not found"
+// @Failure 409 {object} utils.ErrorResponse "Conflict - Invalid auction state"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
 // @Router /auction/sessions/{sessionID}/items/{itemID}/bid [post]
 func (h *BidController) PlaceBid(c echo.Context) error {
 	sessionIDStr := c.Param("sessionID")
@@ -136,10 +136,10 @@ func (h *BidController) PlaceBid(c echo.Context) error {
 // @Produce json
 // @Param sessionID path int true "Auction Session ID"
 // @Param itemID path int true "Auction Item ID"
-// @Success 200 {object} utils.Response "Highest bid retrieved successfully"
-// @Failure 400 {object} utils.Response "Bad request - Invalid session or item ID"
-// @Failure 404 {object} utils.Response "Auction not found"
-// @Failure 500 {object} utils.Response "Internal server error"
+// @Success 200 {object} utils.SuccessResponseData "Highest bid retrieved successfully"
+// @Failure 400 {object} utils.ErrorResponse "Bad request - Invalid session or item ID"
+// @Failure 404 {object} utils.ErrorResponse "Auction not found"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
 // @Router /auction/sessions/{sessionID}/items/{itemID}/highest-bid [get]
 func (h *BidController) GetHighestBid(c echo.Context) error {
 	sessionIDStr := c.Param("sessionID")
@@ -184,11 +184,11 @@ func (h *BidController) GetHighestBid(c echo.Context) error {
 // @Security BearerAuth
 // @Param sessionID path int true "Auction Session ID"
 // @Param itemID path int true "Auction Item ID"
-// @Success 200 {object} utils.Response "Highest bid synced to database"
-// @Failure 400 {object} utils.Response "Bad request - Invalid session or item ID"
-// @Failure 401 {object} utils.Response "Unauthorized - Invalid or missing token"
-// @Failure 403 {object} utils.Response "Forbidden - Admin access required"
-// @Failure 500 {object} utils.Response "Internal server error"
+// @Success 200 {object} utils.SuccessResponseData "Highest bid synced to database"
+// @Failure 400 {object} utils.ErrorResponse "Bad request - Invalid session or item ID"
+// @Failure 401 {object} utils.ErrorResponse "Unauthorized - Invalid or missing token"
+// @Failure 403 {object} utils.ErrorResponse "Forbidden - Admin access required"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
 // @Router /auction/sessions/{sessionID}/items/{itemID}/sync [post]
 func (h *BidController) SyncHighestBid(c echo.Context) error {
 	if !isAdminFromToken(c) {
