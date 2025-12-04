@@ -18,22 +18,19 @@ func ConnectionDb() *gorm.DB {
 
 	dsn := os.Getenv("POSTGRE_URL")
 
-	// Configure PostgreSQL driver to disable prepared statements
-	// This is critical for Supabase connection pooling
 	pgConfig := postgres.Config{
 		DSN:                  dsn,
-		PreferSimpleProtocol: true, // Disable prepared statements at driver level
+		PreferSimpleProtocol: true,
 	}
 
-	// Open database with GORM config
+	// config stmt to false
 	db, err := gorm.Open(postgres.New(pgConfig), &gorm.Config{
-		PrepareStmt: false, // Also disable at GORM level for safety
+		PrepareStmt: false,
 	})
 	if err != nil {
 		log.Fatalf("error connect to database %s", err)
 	}
 
-	// Configure connection pool for better resource management
 	sqlDB, err := db.DB()
 	if err != nil {
 		log.Fatalf("error getting database instance: %s", err)
