@@ -26,6 +26,7 @@ func NewPaymentService(pr PaymentRepository) *PaymentServ {
 }
 
 func (ps *PaymentServ) CreatePayment(req dto.PaymentRequest, userId int, auctionItemId int) (res dto.PaymentResponse, err error) {
+	//get auction for auctionItemId to check if auctionitemid exist or not
 	//random id for order id
 	uuid := uuid.New()
 	orderId := fmt.Sprintf("YDR-%d", uuid.ID())
