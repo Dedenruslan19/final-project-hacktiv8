@@ -28,7 +28,25 @@ func NewDonationRepo(db *gorm.DB) DonationRepo {
 }
 
 func (r *donationRepo) CreateDonation(donation entity.Donation) error {
-	return r.db.Create(&donation).Error
+	// Use transaction to ensure donation and photos are created together
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		// Create donation first
+		if err := tx.Omit("Photos").Create(&donation).Error; err != nil {
+			return err
+		}
+
+		// Create photos if any
+		if len(donation.Photos) > 0 {
+			for i := range donation.Photos {
+				donation.Photos[i].DonationID = donation.ID
+			}
+			if err := tx.Create(&donation.Photos).Error; err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
 }
 
 func (r *donationRepo) GetAllDonations(page, limit int) ([]entity.Donation, int64, error) {
