@@ -21,6 +21,18 @@ func NewAdminController(as AdminService) *AdminController {
 	return &AdminController{adminService: as}
 }
 
+// AdminDashboard godoc
+// @Summary Get admin dashboard analytics
+// @Description Get comprehensive dashboard analytics including donation stats, auction metrics, and system overview
+// @Tags Your Donate Rise API - Admin
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} utils.SuccessResponseData "ok"
+// @Failure 401 {object} utils.ErrorResponse "Unauthorized - Invalid or missing token"
+// @Failure 403 {object} utils.ErrorResponse "Forbidden - Admin access required"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Router /admin/dashboard [get]
 func (ac *AdminController) AdminDashboard(c echo.Context) error {
 	user := c.Get("user").(*jwt.Token)
 	claim := user.Claims.(jwt.MapClaims)

@@ -1,0 +1,117 @@
+package mocks
+
+import (
+	"milestone3/be/internal/entity"
+	gomock "github.com/golang/mock/gomock"
+	reflect "reflect"
+)
+
+// MockAuctionItemRepository is a mock of AuctionItemRepository interface.
+type MockAuctionItemRepository struct {
+	ctrl     *gomock.Controller
+	recorder *MockAuctionItemRepositoryMockRecorder
+}
+
+// MockAuctionItemRepositoryMockRecorder is the mock recorder for MockAuctionItemRepository.
+type MockAuctionItemRepositoryMockRecorder struct {
+	mock *MockAuctionItemRepository
+}
+
+// NewMockAuctionItemRepository creates a new mock instance.
+func NewMockAuctionItemRepository(ctrl *gomock.Controller) *MockAuctionItemRepository {
+	mock := &MockAuctionItemRepository{ctrl: ctrl}
+	mock.recorder = &MockAuctionItemRepositoryMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockAuctionItemRepository) EXPECT() *MockAuctionItemRepositoryMockRecorder {
+	return m.recorder
+}
+
+// Create mocks base method.
+func (m *MockAuctionItemRepository) Create(item *entity.AuctionItem) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", item)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockAuctionItemRepositoryMockRecorder) Create(item interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockAuctionItemRepository)(nil).Create), item)
+}
+
+// Delete mocks base method.
+func (m *MockAuctionItemRepository) Delete(id int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockAuctionItemRepositoryMockRecorder) Delete(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockAuctionItemRepository)(nil).Delete), id)
+}
+
+// GetAll mocks base method.
+func (m *MockAuctionItemRepository) GetAll() ([]entity.AuctionItem, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAll")
+	ret0, _ := ret[0].([]entity.AuctionItem)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAll indicates an expected call of GetAll.
+func (mr *MockAuctionItemRepositoryMockRecorder) GetAll() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAll", reflect.TypeOf((*MockAuctionItemRepository)(nil).GetAll))
+}
+
+// GetByID mocks base method.
+func (m *MockAuctionItemRepository) GetByID(id int64) (*entity.AuctionItem, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByID", id)
+	ret0, _ := ret[0].(*entity.AuctionItem)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByID indicates an expected call of GetByID.
+func (mr *MockAuctionItemRepositoryMockRecorder) GetByID(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockAuctionItemRepository)(nil).GetByID), id)
+}
+
+// ReadBySession mocks base method.
+func (m *MockAuctionItemRepository) ReadBySession(sessionID int64) ([]entity.AuctionItem, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ReadBySession", sessionID)
+	ret0, _ := ret[0].([]entity.AuctionItem)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ReadBySession indicates an expected call of ReadBySession.
+func (mr *MockAuctionItemRepositoryMockRecorder) ReadBySession(sessionID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadBySession", reflect.TypeOf((*MockAuctionItemRepository)(nil).ReadBySession), sessionID)
+}
+
+// Update mocks base method.
+func (m *MockAuctionItemRepository) Update(item *entity.AuctionItem) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", item)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockAuctionItemRepositoryMockRecorder) Update(item interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockAuctionItemRepository)(nil).Update), item)
+}

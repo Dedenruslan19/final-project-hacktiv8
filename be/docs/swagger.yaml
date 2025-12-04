@@ -1,0 +1,1486 @@
+basePath: /
+definitions:
+  dto.ArticleDTO:
+    properties:
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      image:
+        type: string
+      title:
+        type: string
+      week:
+        type: integer
+    required:
+    - content
+    - title
+    - week
+    type: object
+  dto.AuctionItemDTO:
+    properties:
+      category:
+        type: string
+      created_at:
+        description: Photos        []string  `json:"photos,omitempty" validate:"dive,url"`
+        type: string
+      description:
+        type: string
+      donation_id:
+        type: integer
+      id:
+        type: integer
+      session_id:
+        type: integer
+      starting_price:
+        type: number
+      status:
+        type: string
+      title:
+        type: string
+      user_id:
+        type: integer
+    required:
+    - category
+    - description
+    - donation_id
+    - title
+    type: object
+  dto.AuctionSessionDTO:
+    properties:
+      end_time:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      start_time:
+        type: string
+    required:
+    - end_time
+    - name
+    - start_time
+    type: object
+  dto.BidDTO:
+    properties:
+      amount:
+        type: number
+    required:
+    - amount
+    type: object
+  dto.DonationDTO:
+    properties:
+      category:
+        type: string
+      condition:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      photos:
+        items:
+          type: string
+        type: array
+      status:
+        type: string
+      title:
+        type: string
+      user_id:
+        type: integer
+    required:
+    - category
+    - condition
+    - description
+    - status
+    - title
+    - user_id
+    type: object
+  dto.PaymentRequest:
+    properties:
+      amount:
+        type: number
+      auction_item_id:
+        type: number
+      user_id:
+        type: integer
+    required:
+    - amount
+    type: object
+  dto.UserLoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 8
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  dto.UserRequest:
+    properties:
+      email:
+        type: string
+      name:
+        minLength: 3
+        type: string
+      password:
+        minLength: 8
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  dto.UserResponse:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      role:
+        type: string
+    type: object
+  utils.ErrorResponse:
+    properties:
+      message:
+        type: string
+      status:
+        example: error
+        type: string
+    type: object
+  utils.SuccessResponseData:
+    properties:
+      data: {}
+      message:
+        type: string
+      status:
+        example: success
+        type: string
+    type: object
+host: yourdonaterise-278016640112.asia-southeast2.run.app
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: A comprehensive donation and auction management system that transforms
+    donated goods into meaningful impact through transparent auctions and direct donations
+    to institutions in need.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: Your Donate Rise API
+  version: "1.0"
+paths:
+  /admin/dashboard:
+    get:
+      consumes:
+      - application/json
+      description: Get comprehensive dashboard analytics including donation stats,
+        auction metrics, and system overview
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/utils.SuccessResponseData'
+        "401":
+          description: Unauthorized - Invalid or missing token
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "403":
+          description: Forbidden - Admin access required
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get admin dashboard analytics
+      tags:
+      - Your Donate Rise API - Admin
+  /articles:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all published weekly transparency articles with pagination
+      parameters:
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Items per page (default: 10, max: 100)'
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: articles fetched
+          schema:
+            $ref: '#/definitions/utils.SuccessResponseData'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Get all transparency articles
+      tags:
+      - Your Donate Rise API - Articles
+    post:
+      consumes:
+      - multipart/form-data
+      - application/json
+      description: Create a new weekly transparency article with optional image upload
+      parameters:
+      - description: Article title
+        in: formData
+        name: title
+        required: true
+        type: string
+      - description: Article content
+        in: formData
+        name: content
+        required: true
+        type: string
+      - description: Week number
+        in: formData
+        name: week
+        required: true
+        type: integer
+      - description: Article image (optional)
+        in: formData
+        name: image
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: article created
+          schema:
+            $ref: '#/definitions/utils.SuccessResponseData'
+        "400":
+          description: Bad request - Invalid payload or image
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "401":
+          description: Unauthorized - Invalid or missing token
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "403":
+          description: Forbidden - Admin access required
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create new transparency article
+      tags:
+      - Your Donate Rise API - Articles
+  /articles/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a transparency article by ID
+      parameters:
+      - description: Article ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Article deleted successfully
+        "400":
+          description: Bad request - Invalid article ID
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "401":
+          description: Unauthorized - Invalid or missing token
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "403":
+          description: Forbidden - Admin access required
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Article not found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete article
+      tags:
+      - Your Donate Rise API - Articles
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a specific transparency article by its ID
+      parameters:
+      - description: Article ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: article fetched
+          schema:
+            $ref: '#/definitions/utils.SuccessResponseData'
+        "400":
+          description: Bad request - Invalid article ID
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Article not found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Get article by ID
+      tags:
+      - Your Donate Rise API - Articles
+    put:
+      consumes:
+      - application/json
+      description: Update an existing transparency article by ID
+      parameters:
+      - description: Article ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated article data
+        in: body
+        name: article
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ArticleDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: article updated
+          schema:
+            $ref: '#/definitions/utils.SuccessResponseData'
+        "400":
+          description: Bad request - Invalid ID or payload
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "401":
+          description: Unauthorized - Invalid or missing token
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "403":
+          description: Forbidden - Admin access required
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Article not found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update existing article
+      tags:
+      - Your Donate Rise API - Articles
+  /auction/items:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all available auction items
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: auction items retrieved successfully
+          schema:
+            $ref: '#/definitions/utils.SuccessResponseData'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Get all auction items
+      tags:
+      - Your Donate Rise API - Auction Items
+    post:
+      consumes:
+      - application/json
+      description: Create a new auction item from verified donation
+      parameters:
+      - description: Auction item data
+        in: body
+        name: auctionItem
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AuctionItemDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: auction item created successfully
+          schema:
+            $ref: '#/definitions/utils.SuccessResponseData'
+        "400":
+          description: Bad request - Invalid payload
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "401":
+          description: Unauthorized - Invalid or missing token
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "403":
+          description: Forbidden - Admin access required
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create new auction item
+      tags:
+      - Your Donate Rise API - Auction Items
+  /auction/items/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an auction item by ID
+      parameters:
+      - description: Auction Item ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: auction item deleted successfully
+          schema:
+            $ref: '#/definitions/utils.SuccessResponseData'
+        "400":
+          description: Bad request - Invalid ID or cannot delete item
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "401":
+          description: Unauthorized - Invalid or missing token
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "403":
+          description: Forbidden - Admin access required
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Auction item not found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete auction item
+      tags:
+      - Your Donate Rise API - Auction Items
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a specific auction item by its ID
+      parameters:
+      - description: Auction Item ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: auction item retrieved successfully
+          schema:
+            $ref: '#/definitions/utils.SuccessResponseData'
+        "400":
+          description: Bad request - Invalid auction item ID
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Auction item not found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Get auction item by ID
+      tags:
+      - Your Donate Rise API - Auction Items
+    put:
+      consumes:
+      - application/json
+      description: Update an existing auction item by ID
+      parameters:
+      - description: Auction Item ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated auction item data
+        in: body
+        name: auctionItem
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AuctionItemDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: auction item updated successfully
+          schema:
+            $ref: '#/definitions/utils.SuccessResponseData'
+        "400":
+          description: Bad request - Invalid ID or payload
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "401":
+          description: Unauthorized - Invalid or missing token
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "403":
+          description: Forbidden - Admin access required
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Auction item not found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update auction item
+      tags:
+      - Your Donate Rise API - Auction Items
+  /auction/sessions:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all auction sessions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: auction sessions retrieved successfully
+          schema:
+            $ref: '#/definitions/utils.SuccessResponseData'
+        "404":
+          description: No auction sessions found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Get all auction sessions
+      tags:
+      - Your Donate Rise API - Auction Sessions
+    post:
+      consumes:
+      - application/json
+      description: Create a new auction session with start and end times
+      parameters:
+      - description: Auction session data
+        in: body
+        name: auctionSession
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AuctionSessionDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: auction session created successfully
+          schema:
+            $ref: '#/definitions/utils.SuccessResponseData'
+        "400":
+          description: Bad request - Invalid payload
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "401":
+          description: Unauthorized - Invalid or missing token
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "403":
+          description: Forbidden - Admin access required
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create new auction session
+      tags:
+      - Your Donate Rise API - Auction Sessions
+  /auction/sessions/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an auction session by ID
+      parameters:
+      - description: Auction Session ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: auction session deleted successfully
+          schema:
+            $ref: '#/definitions/utils.SuccessResponseData'
+        "400":
+          description: Bad request - Invalid ID or session is active
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "401":
+          description: Unauthorized - Invalid or missing token
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "403":
+          description: Forbidden - Admin access required
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Auction session not found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete auction session
+      tags:
+      - Your Donate Rise API - Auction Sessions
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a specific auction session by its ID
+      parameters:
+      - description: Auction Session ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: auction session retrieved successfully
+          schema:
+            $ref: '#/definitions/utils.SuccessResponseData'
+        "400":
+          description: Bad request - Invalid auction session ID
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Auction session not found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Get auction session by ID
+      tags:
+      - Your Donate Rise API - Auction Sessions
+    put:
+      consumes:
+      - application/json
+      description: Update an existing auction session by ID
+      parameters:
+      - description: Auction Session ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated auction session data
+        in: body
+        name: auctionSession
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AuctionSessionDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: auction session updated successfully
+          schema:
+            $ref: '#/definitions/utils.SuccessResponseData'
+        "400":
+          description: Bad request - Invalid ID, payload, or session is active
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "401":
+          description: Unauthorized - Invalid or missing token
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "403":
+          description: Forbidden - Admin access required
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Auction session not found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update auction session
+      tags:
+      - Your Donate Rise API - Auction Sessions
+  /auction/sessions/{sessionID}/items/{itemID}/bid:
+    post:
+      consumes:
+      - application/json
+      description: Place a bid on a specific auction item within an active session
+      parameters:
+      - description: Auction Session ID
+        in: path
+        name: sessionID
+        required: true
+        type: integer
+      - description: Auction Item ID
+        in: path
+        name: itemID
+        required: true
+        type: integer
+      - description: Bid amount
+        in: body
+        name: bid
+        required: true
+        schema:
+          $ref: '#/definitions/dto.BidDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: bid placed successfully
+          schema:
+            $ref: '#/definitions/utils.SuccessResponseData'
+        "400":
+          description: Bad request - Invalid parameters or bid too low
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "401":
+          description: Unauthorized - Invalid or missing token
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Auction session or item not found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "409":
+          description: Conflict - Invalid auction state
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Place bid on auction item
+      tags:
+      - Your Donate Rise API - Bidding
+  /auction/sessions/{sessionID}/items/{itemID}/highest-bid:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the current highest bid for a specific auction item
+      parameters:
+      - description: Auction Session ID
+        in: path
+        name: sessionID
+        required: true
+        type: integer
+      - description: Auction Item ID
+        in: path
+        name: itemID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: highest bid retrieved successfully
+          schema:
+            $ref: '#/definitions/utils.SuccessResponseData'
+        "400":
+          description: Bad request - Invalid session or item ID
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Auction not found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Get highest bid for auction item
+      tags:
+      - Your Donate Rise API - Bidding
+  /auction/sessions/{sessionID}/items/{itemID}/sync:
+    post:
+      consumes:
+      - application/json
+      description: Synchronize the highest bid from Redis cache to the database
+      parameters:
+      - description: Auction Session ID
+        in: path
+        name: sessionID
+        required: true
+        type: integer
+      - description: Auction Item ID
+        in: path
+        name: itemID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: highest bid synced to database
+          schema:
+            $ref: '#/definitions/utils.SuccessResponseData'
+        "400":
+          description: Bad request - Invalid session or item ID
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "401":
+          description: Unauthorized - Invalid or missing token
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "403":
+          description: Forbidden - Admin access required
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Sync highest bid to database
+      tags:
+      - Your Donate Rise API - Bidding
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user and return access token
+      parameters:
+      - description: User login credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UserLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success login
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.SuccessResponseData'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "400":
+          description: Bad request - Invalid credentials format
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "401":
+          description: Unauthorized - Invalid email or password
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: User login
+      tags:
+      - Your Donate Rise API - Authentication
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user account in the system
+      parameters:
+      - description: User registration data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: user created
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.SuccessResponseData'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.UserResponse'
+              type: object
+        "400":
+          description: Bad request - Invalid payload or validation error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Register new user
+      tags:
+      - Your Donate Rise API - Authentication
+  /donations:
+    get:
+      consumes:
+      - application/json
+      description: Get all donations (admin sees all, users see only their own) with
+        pagination
+      parameters:
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Items per page (default: 10, max: 100)'
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: donations fetched
+          schema:
+            $ref: '#/definitions/utils.SuccessResponseData'
+        "401":
+          description: Unauthorized - Invalid or missing token
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get all donations
+      tags:
+      - Your Donate Rise API - Donations
+    post:
+      consumes:
+      - multipart/form-data
+      - application/json
+      description: Submit a new donation with photos and details
+      parameters:
+      - description: Donation title
+        in: formData
+        name: title
+        required: true
+        type: string
+      - description: Donation description
+        in: formData
+        name: description
+        required: true
+        type: string
+      - description: Donation category
+        in: formData
+        name: category
+        required: true
+        type: string
+      - description: Item condition
+        in: formData
+        name: condition
+        required: true
+        type: string
+      - description: Donation photos (multiple files allowed)
+        in: formData
+        name: photos
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: donation created successfully
+          schema:
+            $ref: '#/definitions/utils.SuccessResponseData'
+        "400":
+          description: Bad request - Invalid payload or file upload
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "401":
+          description: Unauthorized - Invalid or missing token
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create new donation
+      tags:
+      - Your Donate Rise API - Donations
+  /donations/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a donation by ID (owner or admin only)
+      parameters:
+      - description: Donation ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Donation deleted successfully
+        "400":
+          description: Bad request - Invalid donation ID
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "401":
+          description: Unauthorized - Invalid or missing token
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "403":
+          description: Forbidden - Access denied
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Donation not found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete donation
+      tags:
+      - Your Donate Rise API - Donations
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a specific donation by ID (owner or admin only)
+      parameters:
+      - description: Donation ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: donation fetched
+          schema:
+            $ref: '#/definitions/utils.SuccessResponseData'
+        "400":
+          description: Bad request - Invalid donation ID
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "401":
+          description: Unauthorized - Invalid or missing token
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "403":
+          description: Forbidden - Access denied
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Donation not found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get donation by ID
+      tags:
+      - Your Donate Rise API - Donations
+    patch:
+      consumes:
+      - application/json
+      description: Partially update a donation by ID (owner or admin only)
+      parameters:
+      - description: Donation ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Partial donation data
+        in: body
+        name: donation
+        required: true
+        schema:
+          $ref: '#/definitions/dto.DonationDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: donation patched
+          schema:
+            $ref: '#/definitions/utils.SuccessResponseData'
+        "400":
+          description: Bad request - Invalid ID or payload
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "401":
+          description: Unauthorized - Invalid or missing token
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "403":
+          description: Forbidden - Access denied
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Donation not found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Partially update donation
+      tags:
+      - Your Donate Rise API - Donations
+    put:
+      consumes:
+      - application/json
+      description: Update an existing donation (owner or admin only)
+      parameters:
+      - description: Donation ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated donation data
+        in: body
+        name: donation
+        required: true
+        schema:
+          $ref: '#/definitions/dto.DonationDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: donation updated
+          schema:
+            $ref: '#/definitions/utils.SuccessResponseData'
+        "400":
+          description: Bad request - Invalid ID or payload
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "401":
+          description: Unauthorized - Invalid or missing token
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "403":
+          description: Forbidden - Access denied
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "404":
+          description: Donation not found
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update donation
+      tags:
+      - Your Donate Rise API - Donations
+  /donations/final:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all items that were directly donated to institutions with
+        pagination (admin only)
+      parameters:
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Items per page (default: 10, max: 100)'
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Final donations fetched successfully
+          schema:
+            $ref: '#/definitions/utils.SuccessResponseData'
+        "401":
+          description: Unauthorized - Invalid or missing token
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "403":
+          description: Forbidden - Admin access required
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get all final donations
+      tags:
+      - Your Donate Rise API - Final Donations
+  /donations/final/me:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all final donations made by the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Final donations fetched successfully
+          schema:
+            $ref: '#/definitions/utils.SuccessResponseData'
+        "401":
+          description: Unauthorized - Invalid or missing token
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get my final donations
+      tags:
+      - Your Donate Rise API - Final Donations
+  /donations/final/user/{user_id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all final donations made by a specific user (admin only)
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Final donations fetched successfully
+          schema:
+            $ref: '#/definitions/utils.SuccessResponseData'
+        "400":
+          description: Bad request - Invalid user ID
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "401":
+          description: Unauthorized - Invalid or missing token
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "403":
+          description: Forbidden - Admin access required
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get final donations by user ID
+      tags:
+      - Your Donate Rise API - Final Donations
+  /payments:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all payment transactions in the system
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/utils.SuccessResponseData'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Get all payments
+      tags:
+      - Your Donate Rise API - Payments
+  /payments/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve payment information by payment ID
+      parameters:
+      - description: Payment ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/utils.SuccessResponseData'
+        "400":
+          description: Bad request - Invalid payment ID
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Get payment by ID
+      tags:
+      - Your Donate Rise API - Payments
+  /payments/auction/{auctionId}:
+    post:
+      consumes:
+      - application/json
+      description: Create a payment transaction for a won auction item
+      parameters:
+      - description: Auction Item ID
+        in: path
+        name: auctionId
+        required: true
+        type: integer
+      - description: Payment details
+        in: body
+        name: payment
+        required: true
+        schema:
+          $ref: '#/definitions/dto.PaymentRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: create
+          schema:
+            $ref: '#/definitions/utils.SuccessResponseData'
+        "400":
+          description: Bad request - Invalid payload or auction ID
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "401":
+          description: Unauthorized - Invalid or missing token
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create payment for auction item
+      tags:
+      - Your Donate Rise API - Payments
+  /payments/status/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Check the payment status of an order through Midtrans payment gateway
+      parameters:
+      - description: Order ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/utils.SuccessResponseData'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Check payment status via Midtrans
+      tags:
+      - Your Donate Rise API - Payments
+schemes:
+- https
+- http
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

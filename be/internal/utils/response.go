@@ -6,6 +6,26 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+// Response represents the standard API response structure
+type Response struct {
+	Status  string      `json:"status" example:"success"`
+	Message string      `json:"message" example:"Operation completed successfully"`
+	Data    interface{} `json:"data,omitempty"`
+}
+
+// SuccessResponse represents a successful API response
+type SuccessResponseData struct {
+	Status  string      `json:"status" example:"success"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data"`
+}
+
+// ErrorResponse represents an error API response
+type ErrorResponse struct {
+	Status  string `json:"status" example:"error"`
+	Message string `json:"message"`
+}
+
 // sendResponse is a helper function to send JSON responses
 // code   : HTTP status code (200, 400, 404, etc.)
 // status : "success" or "error"

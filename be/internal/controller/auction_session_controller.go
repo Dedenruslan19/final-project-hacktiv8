@@ -35,6 +35,20 @@ func isAdminFromTokenSession(c echo.Context) bool {
 	return ok && role == "admin"
 }
 
+// CreateAuctionSession godoc
+// @Summary Create new auction session
+// @Description Create a new auction session with start and end times
+// @Tags Your Donate Rise API - Auction Sessions
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param auctionSession body dto.AuctionSessionDTO true "Auction session data"
+// @Success 201 {object} utils.SuccessResponseData "auction session created successfully"
+// @Failure 400 {object} utils.ErrorResponse "Bad request - Invalid payload"
+// @Failure 401 {object} utils.ErrorResponse "Unauthorized - Invalid or missing token"
+// @Failure 403 {object} utils.ErrorResponse "Forbidden - Admin access required"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Router /auction/sessions [post]
 func (h *AuctionSessionController) CreateAuctionSession(c echo.Context) error {
 	if !isAdminFromTokenSession(c) {
 		return utils.ForbiddenResponse(c, "only admin can create auction sessions")
@@ -66,6 +80,18 @@ func (h *AuctionSessionController) CreateAuctionSession(c echo.Context) error {
 	return utils.CreatedResponse(c, "auction session created successfully", createdSession)
 }
 
+// GetAuctionSessionByID godoc
+// @Summary Get auction session by ID
+// @Description Retrieve a specific auction session by its ID
+// @Tags Your Donate Rise API - Auction Sessions
+// @Accept json
+// @Produce json
+// @Param id path int true "Auction Session ID"
+// @Success 200 {object} utils.SuccessResponseData "auction session retrieved successfully"
+// @Failure 400 {object} utils.ErrorResponse "Bad request - Invalid auction session ID"
+// @Failure 404 {object} utils.ErrorResponse "Auction session not found"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Router /auction/sessions/{id} [get]
 func (h *AuctionSessionController) GetAuctionSessionByID(c echo.Context) error {
 	idStr := c.Param("id")
 	id, err := strconv.ParseInt(idStr, 10, 64)
@@ -86,6 +112,16 @@ func (h *AuctionSessionController) GetAuctionSessionByID(c echo.Context) error {
 	return utils.SuccessResponse(c, "auction session retrieved successfully", session)
 }
 
+// GetAllAuctionSessions godoc
+// @Summary Get all auction sessions
+// @Description Retrieve all auction sessions
+// @Tags Your Donate Rise API - Auction Sessions
+// @Accept json
+// @Produce json
+// @Success 200 {object} utils.SuccessResponseData "auction sessions retrieved successfully"
+// @Failure 404 {object} utils.ErrorResponse "No auction sessions found"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Router /auction/sessions [get]
 func (h *AuctionSessionController) GetAllAuctionSessions(c echo.Context) error {
 	sessions, err := h.svc.GetAll()
 	if err != nil {
@@ -100,6 +136,22 @@ func (h *AuctionSessionController) GetAllAuctionSessions(c echo.Context) error {
 	return utils.SuccessResponse(c, "auction sessions retrieved successfully", sessions)
 }
 
+// UpdateAuctionSession godoc
+// @Summary Update auction session
+// @Description Update an existing auction session by ID
+// @Tags Your Donate Rise API - Auction Sessions
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Auction Session ID"
+// @Param auctionSession body dto.AuctionSessionDTO true "Updated auction session data"
+// @Success 200 {object} utils.SuccessResponseData "auction session updated successfully"
+// @Failure 400 {object} utils.ErrorResponse "Bad request - Invalid ID, payload, or session is active"
+// @Failure 401 {object} utils.ErrorResponse "Unauthorized - Invalid or missing token"
+// @Failure 403 {object} utils.ErrorResponse "Forbidden - Admin access required"
+// @Failure 404 {object} utils.ErrorResponse "Auction session not found"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Router /auction/sessions/{id} [put]
 func (h *AuctionSessionController) UpdateAuctionSession(c echo.Context) error {
 	if !isAdminFromTokenSession(c) {
 		return utils.ForbiddenResponse(c, "only admin can update auction sessions")
@@ -141,6 +193,21 @@ func (h *AuctionSessionController) UpdateAuctionSession(c echo.Context) error {
 	return utils.SuccessResponse(c, "auction session updated successfully", updatedSession)
 }
 
+// DeleteAuctionSession godoc
+// @Summary Delete auction session
+// @Description Delete an auction session by ID
+// @Tags Your Donate Rise API - Auction Sessions
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Auction Session ID"
+// @Success 200 {object} utils.SuccessResponseData "auction session deleted successfully"
+// @Failure 400 {object} utils.ErrorResponse "Bad request - Invalid ID or session is active"
+// @Failure 401 {object} utils.ErrorResponse "Unauthorized - Invalid or missing token"
+// @Failure 403 {object} utils.ErrorResponse "Forbidden - Admin access required"
+// @Failure 404 {object} utils.ErrorResponse "Auction session not found"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Router /auction/sessions/{id} [delete]
 func (h *AuctionSessionController) DeleteAuctionSession(c echo.Context) error {
 	if !isAdminFromTokenSession(c) {
 		return utils.ForbiddenResponse(c, "only admin can delete auction sessions")

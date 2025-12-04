@@ -11,26 +11,75 @@ import (
 	"milestone3/be/internal/service"
 	"milestone3/be/internal/utils"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 )
 
 type ArticleController struct {
 	svc           service.ArticleService
 	storagePublic repository.GCPStorageRepo
+	validator     *validator.Validate
 }
 
 func NewArticleController(s service.ArticleService, storage repository.GCPStorageRepo) *ArticleController {
-	return &ArticleController{svc: s, storagePublic: storage}
+	return &ArticleController{
+		svc:           s,
+		storagePublic: storage,
+		validator:     validator.New(),
+	}
 }
 
+// GetAllArticles godoc
+// @Summary Get all transparency articles
+// @Description Retrieve all published weekly transparency articles with pagination
+// @Tags Your Donate Rise API - Articles
+// @Accept json
+// @Produce json
+// @Param page query int false "Page number (default: 1)"
+// @Param limit query int false "Items per page (default: 10, max: 100)"
+// @Success 200 {object} utils.SuccessResponseData "articles fetched"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Router /articles [get]
 func (h *ArticleController) GetAllArticles(c echo.Context) error {
-	articles, err := h.svc.GetAllArticles()
+	// Parse pagination params
+	page, _ := strconv.Atoi(c.QueryParam("page"))
+	if page < 1 {
+		page = 1
+	}
+	limit, _ := strconv.Atoi(c.QueryParam("limit"))
+	if limit < 1 {
+		limit = 10
+	}
+	if limit > 100 {
+		limit = 100
+	}
+
+	articles, total, err := h.svc.GetAllArticles(page, limit)
 	if err != nil {
 		return utils.InternalServerErrorResponse(c, "failed fetching articles")
 	}
-	return utils.SuccessResponse(c, "articles fetched", articles)
+
+	response := map[string]interface{}{
+		"articles": articles,
+		"page":     page,
+		"limit":    limit,
+		"total":    total,
+	}
+	return utils.SuccessResponse(c, "articles fetched", response)
 }
 
+// GetArticleByID godoc
+// @Summary Get article by ID
+// @Description Retrieve a specific transparency article by its ID
+// @Tags Your Donate Rise API - Articles
+// @Accept json
+// @Produce json
+// @Param id path int true "Article ID"
+// @Success 200 {object} utils.SuccessResponseData "article fetched"
+// @Failure 400 {object} utils.ErrorResponse "Bad request - Invalid article ID"
+// @Failure 404 {object} utils.ErrorResponse "Article not found"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Router /articles/{id} [get]
 func (h *ArticleController) GetArticleByID(c echo.Context) error {
 	idParam := c.Param("id")
 	id64, err := strconv.ParseUint(idParam, 10, 64)
@@ -47,6 +96,24 @@ func (h *ArticleController) GetArticleByID(c echo.Context) error {
 	return utils.SuccessResponse(c, "article fetched", article)
 }
 
+// CreateArticle godoc
+// @Summary Create new transparency article
+// @Description Create a new weekly transparency article with optional image upload
+// @Tags Your Donate Rise API - Articles
+// @Accept multipart/form-data
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param title formData string true "Article title"
+// @Param content formData string true "Article content"
+// @Param week formData int true "Week number"
+// @Param image formData file false "Article image (optional)"
+// @Success 201 {object} utils.SuccessResponseData "article created"
+// @Failure 400 {object} utils.ErrorResponse "Bad request - Invalid payload or image"
+// @Failure 401 {object} utils.ErrorResponse "Unauthorized - Invalid or missing token"
+// @Failure 403 {object} utils.ErrorResponse "Forbidden - Admin access required"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Router /articles [post]
 func (h *ArticleController) CreateArticle(c echo.Context) error {
 	if !utils.IsAdmin(c) {
 		return utils.ForbiddenResponse(c, "admin only")
@@ -63,6 +130,17 @@ func (h *ArticleController) CreateArticle(c echo.Context) error {
 
 		form := c.Request().MultipartForm
 
+		// Validate required fields
+		if len(form.Value["title"]) == 0 {
+			return utils.BadRequestResponse(c, "title is required")
+		}
+		if len(form.Value["content"]) == 0 {
+			return utils.BadRequestResponse(c, "content is required")
+		}
+		if len(form.Value["week"]) == 0 {
+			return utils.BadRequestResponse(c, "week is required")
+		}
+
 		payload.Title = form.Value["title"][0]
 		payload.Content = form.Value["content"][0]
 		week, _ := strconv.Atoi(form.Value["week"][0])
@@ -72,13 +150,29 @@ func (h *ArticleController) CreateArticle(c echo.Context) error {
 		if fhs, ok := form.File["image"]; ok && len(fhs) > 0 {
 			fh := fhs[0]
 
+			// Validate file size (max 5MB)
+			if fh.Size > 5*1024*1024 {
+				return utils.BadRequestResponse(c, "image size exceeds 5MB limit")
+			}
+
+			// Validate file type (only images)
+			contentType := fh.Header.Get("Content-Type")
+			if !strings.HasPrefix(contentType, "image/") {
+				return utils.BadRequestResponse(c, "only image files are allowed")
+			}
+
 			file, err := fh.Open()
 			if err != nil {
 				return utils.BadRequestResponse(c, "failed open image")
 			}
 			defer file.Close()
 
-			objName := fmt.Sprintf("articles/%d_%s", time.Now().UnixNano(), fh.Filename)
+			// Sanitize filename
+			safeFilename := strings.ReplaceAll(fh.Filename, "..", "")
+			safeFilename = strings.ReplaceAll(safeFilename, "/", "")
+			safeFilename = strings.ReplaceAll(safeFilename, "\\", "")
+
+			objName := fmt.Sprintf("articles/%d_%s", time.Now().UnixNano(), safeFilename)
 
 			//  upload to public storage
 			url, err := h.storagePublic.UploadFile(c.Request().Context(), file, objName)
@@ -96,6 +190,10 @@ func (h *ArticleController) CreateArticle(c echo.Context) error {
 		}
 	}
 
+	if err := h.validator.Struct(payload); err != nil {
+		return utils.BadRequestResponse(c, err.Error())
+	}
+
 	// send to service
 	if err := h.svc.CreateArticle(payload); err != nil {
 		return utils.InternalServerErrorResponse(c, "failed creating article")
@@ -104,6 +202,22 @@ func (h *ArticleController) CreateArticle(c echo.Context) error {
 	return utils.CreatedResponse(c, "article created", nil)
 }
 
+// UpdateArticle godoc
+// @Summary Update existing article
+// @Description Update an existing transparency article by ID
+// @Tags Your Donate Rise API - Articles
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Article ID"
+// @Param article body dto.ArticleDTO true "Updated article data"
+// @Success 200 {object} utils.SuccessResponseData "article updated"
+// @Failure 400 {object} utils.ErrorResponse "Bad request - Invalid ID or payload"
+// @Failure 401 {object} utils.ErrorResponse "Unauthorized - Invalid or missing token"
+// @Failure 403 {object} utils.ErrorResponse "Forbidden - Admin access required"
+// @Failure 404 {object} utils.ErrorResponse "Article not found"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Router /articles/{id} [put]
 func (h *ArticleController) UpdateArticle(c echo.Context) error {
 	if !utils.IsAdmin(c) {
 		return utils.ForbiddenResponse(c, "admin only")
@@ -127,6 +241,21 @@ func (h *ArticleController) UpdateArticle(c echo.Context) error {
 	return utils.SuccessResponse(c, "article updated", nil)
 }
 
+// DeleteArticle godoc
+// @Summary Delete article
+// @Description Delete a transparency article by ID
+// @Tags Your Donate Rise API - Articles
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Article ID"
+// @Success 204 "Article deleted successfully"
+// @Failure 400 {object} utils.ErrorResponse "Bad request - Invalid article ID"
+// @Failure 401 {object} utils.ErrorResponse "Unauthorized - Invalid or missing token"
+// @Failure 403 {object} utils.ErrorResponse "Forbidden - Admin access required"
+// @Failure 404 {object} utils.ErrorResponse "Article not found"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Router /articles/{id} [delete]
 func (h *ArticleController) DeleteArticle(c echo.Context) error {
 	if !utils.IsAdmin(c) {
 		return utils.ForbiddenResponse(c, "admin only")

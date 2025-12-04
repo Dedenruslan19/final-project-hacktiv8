@@ -1,3 +1,25 @@
+// Your Donate Rise API
+// @title Your Donate Rise API
+// @version 1.0
+// @description A comprehensive donation and auction management system that transforms donated goods into meaningful impact through transparent auctions and direct donations to institutions in need.
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name API Support
+// @contact.url http://www.swagger.io/support
+// @contact.email support@swagger.io
+
+// @license.name MIT
+// @license.url https://opensource.org/licenses/MIT
+
+// @host yourdonaterise-278016640112.asia-southeast2.run.app
+// @BasePath /
+// @schemes https http
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and JWT token.
+
 package main
 
 import (
@@ -9,6 +31,7 @@ import (
 	"cloud.google.com/go/storage"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
+	"github.com/swaggo/echo-swagger"
 
 	"milestone3/be/api/routes"
 	"milestone3/be/config"
@@ -16,6 +39,7 @@ import (
 	scheduler "milestone3/be/internal/cron"
 	"milestone3/be/internal/repository"
 	"milestone3/be/internal/service"
+	_ "milestone3/be/docs" // swagger docs
 )
 
 var loggerOption = slog.HandlerOptions{AddSource: true}
@@ -28,7 +52,7 @@ func main() {
 
 	// GCP PUBLIC BUCKET
 	var gcpPublicRepo repository.GCPStorageRepo
-	publicBucket := os.Getenv("GCS_PUBLIC_BUCKET")
+	publicBucket := os.Getenv("PUBLIC_BUCKET")
 
 	if publicBucket != "" {
 		client, err := storage.NewClient(ctx)
@@ -37,12 +61,12 @@ func main() {
 		}
 		gcpPublicRepo = repository.NewGCPStorageRepo(client, publicBucket, true)
 	} else {
-		log.Println("GCS_PUBLIC_BUCKET NOT SET")
+		log.Println("PUBLIC_BUCKET NOT SET")
 	}
 
 	// GCP PRIVATE BUCKET
 	var gcpPrivateRepo repository.GCPStorageRepo
-	privateBucket := os.Getenv("GCS_PRIVATE_BUCKET")
+	privateBucket := os.Getenv("PRIVATE_BUCKET")
 
 	if privateBucket != "" {
 		client, err := storage.NewClient(ctx)
@@ -51,7 +75,7 @@ func main() {
 		}
 		gcpPrivateRepo = repository.NewGCPStorageRepo(client, privateBucket, false)
 	} else {
-		log.Println("GCS_PRIVATE_BUCKET NOT SET")
+		log.Println("PRIVATE_BUCKET NOT SET")
 	}
 
 	// repositories
@@ -103,6 +127,9 @@ func main() {
 	// echo + router
 	e := echo.New()
 	router := routes.NewRouter(e)
+
+	// Swagger route
+	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	router.RegisterUserRoutes(userCtrl)
 	router.RegisterArticleRoutes(articleCtrl)

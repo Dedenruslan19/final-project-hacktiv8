@@ -13,19 +13,42 @@ import (
 	"milestone3/be/internal/service"
 	"milestone3/be/internal/utils"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 )
 
 type DonationController struct {
 	svc          service.DonationService
 	privateStore repository.GCPStorageRepo
+	validator    *validator.Validate
 }
 
 func NewDonationController(s service.DonationService, privateStore repository.GCPStorageRepo) *DonationController {
-	return &DonationController{svc: s, privateStore: privateStore}
+	return &DonationController{
+		svc:          s,
+		privateStore: privateStore,
+		validator:    validator.New(),
+	}
 }
 
-// POST /donations (fix)
+// CreateDonation godoc
+// @Summary Create new donation
+// @Description Submit a new donation with photos and details
+// @Tags Your Donate Rise API - Donations
+// @Accept multipart/form-data
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param title formData string true "Donation title"
+// @Param description formData string true "Donation description"
+// @Param category formData string true "Donation category"
+// @Param condition formData string true "Item condition"
+// @Param photos formData file false "Donation photos (multiple files allowed)"
+// @Success 201 {object} utils.SuccessResponseData "donation created successfully"
+// @Failure 400 {object} utils.ErrorResponse "Bad request - Invalid payload or file upload"
+// @Failure 401 {object} utils.ErrorResponse "Unauthorized - Invalid or missing token"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Router /donations [post]
 func (h *DonationController) CreateDonation(c echo.Context) error {
 	var payload dto.DonationDTO
 
@@ -36,6 +59,20 @@ func (h *DonationController) CreateDonation(c echo.Context) error {
 			return utils.BadRequestResponse(c, "invalid multipart form")
 		}
 		form := c.Request().MultipartForm
+
+		// Validate required fields exist
+		if len(form.Value["title"]) == 0 {
+			return utils.BadRequestResponse(c, "title is required")
+		}
+		if len(form.Value["description"]) == 0 {
+			return utils.BadRequestResponse(c, "description is required")
+		}
+		if len(form.Value["category"]) == 0 {
+			return utils.BadRequestResponse(c, "category is required")
+		}
+		if len(form.Value["condition"]) == 0 {
+			return utils.BadRequestResponse(c, "condition is required")
+		}
 
 		payload.Title = form.Value["title"][0]
 		payload.Description = form.Value["description"][0]
@@ -49,12 +86,28 @@ func (h *DonationController) CreateDonation(c echo.Context) error {
 		// FILE HANDLING PRIVATE ONLY
 		if fhs, ok := form.File["photos"]; ok {
 			for _, fh := range fhs {
+				// Validate file size (max 10MB per file)
+				if fh.Size > 10*1024*1024 {
+					return utils.BadRequestResponse(c, "file size exceeds 10MB limit")
+				}
+
+				// Validate file type (only images)
+				contentType := fh.Header.Get("Content-Type")
+				if !strings.HasPrefix(contentType, "image/") {
+					return utils.BadRequestResponse(c, "only image files are allowed")
+				}
+
 				f, err := fh.Open()
 				if err != nil {
 					return utils.BadRequestResponse(c, "cannot open file")
 				}
 
-				objName := fmt.Sprintf("donations/private/%d_%s", time.Now().UnixNano(), fh.Filename)
+				// Sanitize filename to prevent path traversal
+				safeFilename := strings.ReplaceAll(fh.Filename, "..", "")
+				safeFilename = strings.ReplaceAll(safeFilename, "/", "")
+				safeFilename = strings.ReplaceAll(safeFilename, "\\", "")
+
+				objName := fmt.Sprintf("donations/private/%d_%s", time.Now().UnixNano(), safeFilename)
 				objectName, err := h.privateStore.UploadFile(c.Request().Context(), f, objName)
 				_ = f.Close()
 
@@ -79,6 +132,10 @@ func (h *DonationController) CreateDonation(c echo.Context) error {
 	}
 	payload.UserID = userID
 
+	if err := h.validator.Struct(payload); err != nil {
+		return utils.BadRequestResponse(c, err.Error())
+	}
+
 	if err := h.svc.CreateDonation(payload); err != nil {
 		return utils.InternalServerErrorResponse(c, "failed creating donation")
 	}
@@ -86,28 +143,71 @@ func (h *DonationController) CreateDonation(c echo.Context) error {
 	return utils.CreatedResponse(c, "donation created successfully", nil)
 }
 
-// user/admin: GET /donations
-// - admin: returns all donations
-// - user: returns only own donations
+// GetAllDonations godoc
+// @Summary Get all donations
+// @Description Get all donations (admin sees all, users see only their own) with pagination
+// @Tags Your Donate Rise API - Donations
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param page query int false "Page number (default: 1)"
+// @Param limit query int false "Items per page (default: 10, max: 100)"
+// @Success 200 {object} utils.SuccessResponseData "donations fetched"
+// @Failure 401 {object} utils.ErrorResponse "Unauthorized - Invalid or missing token"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Router /donations [get]
 func (h *DonationController) GetAllDonations(c echo.Context) error {
-	userID, _ := utils.GetUserID(c) // unauthenticated => 0,false
+	userID, _ := utils.GetUserID(c)
 	isAdm := utils.IsAdmin(c)
 
-	// require auth for user-level listing; admin may call even without user_id set by middleware
 	if !isAdm {
 		if userID == 0 {
 			return utils.UnauthorizedResponse(c, "unauthenticated")
 		}
 	}
 
-	donations, err := h.svc.GetAllDonations(userID, isAdm)
+	// Parse pagination params
+	page, _ := strconv.Atoi(c.QueryParam("page"))
+	if page < 1 {
+		page = 1
+	}
+	limit, _ := strconv.Atoi(c.QueryParam("limit"))
+	if limit < 1 {
+		limit = 10
+	}
+	if limit > 100 {
+		limit = 100
+	}
+
+	donations, total, err := h.svc.GetAllDonations(userID, isAdm, page, limit)
 	if err != nil {
 		return utils.InternalServerErrorResponse(c, "failed fetching donations")
 	}
-	return utils.SuccessResponse(c, "donations fetched", donations)
+
+	response := map[string]interface{}{
+		"donations": donations,
+		"page":      page,
+		"limit":     limit,
+		"total":     total,
+	}
+	return utils.SuccessResponse(c, "donations fetched", response)
 }
 
-// user/admin: GET /donations/:id (owner or admin)
+// GetDonationByID godoc
+// @Summary Get donation by ID
+// @Description Retrieve a specific donation by ID (owner or admin only)
+// @Tags Your Donate Rise API - Donations
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Donation ID"
+// @Success 200 {object} utils.SuccessResponseData "donation fetched"
+// @Failure 400 {object} utils.ErrorResponse "Bad request - Invalid donation ID"
+// @Failure 401 {object} utils.ErrorResponse "Unauthorized - Invalid or missing token"
+// @Failure 403 {object} utils.ErrorResponse "Forbidden - Access denied"
+// @Failure 404 {object} utils.ErrorResponse "Donation not found"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Router /donations/{id} [get]
 func (h *DonationController) GetDonationByID(c echo.Context) error {
 	idParam := c.Param("id")
 	id64, err := strconv.ParseUint(idParam, 10, 64)
@@ -137,7 +237,22 @@ func (h *DonationController) GetDonationByID(c echo.Context) error {
 	return utils.SuccessResponse(c, "donation fetched", d)
 }
 
-// user/admin: PUT /donations/:id (only owner or admin can update)
+// UpdateDonation godoc
+// @Summary Update donation
+// @Description Update an existing donation (owner or admin only)
+// @Tags Your Donate Rise API - Donations
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Donation ID"
+// @Param donation body dto.DonationDTO true "Updated donation data"
+// @Success 200 {object} utils.SuccessResponseData "donation updated"
+// @Failure 400 {object} utils.ErrorResponse "Bad request - Invalid ID or payload"
+// @Failure 401 {object} utils.ErrorResponse "Unauthorized - Invalid or missing token"
+// @Failure 403 {object} utils.ErrorResponse "Forbidden - Access denied"
+// @Failure 404 {object} utils.ErrorResponse "Donation not found"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Router /donations/{id} [put]
 func (h *DonationController) UpdateDonation(c echo.Context) error {
 	idParam := c.Param("id")
 	id64, err := strconv.ParseUint(idParam, 10, 64)
@@ -169,7 +284,21 @@ func (h *DonationController) UpdateDonation(c echo.Context) error {
 	return utils.SuccessResponse(c, "donation updated", nil)
 }
 
-// user/admin: DELETE /donations/:id (only owner or admin can delete)
+// DeleteDonation godoc
+// @Summary Delete donation
+// @Description Delete a donation by ID (owner or admin only)
+// @Tags Your Donate Rise API - Donations
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Donation ID"
+// @Success 204 "Donation deleted successfully"
+// @Failure 400 {object} utils.ErrorResponse "Bad request - Invalid donation ID"
+// @Failure 401 {object} utils.ErrorResponse "Unauthorized - Invalid or missing token"
+// @Failure 403 {object} utils.ErrorResponse "Forbidden - Access denied"
+// @Failure 404 {object} utils.ErrorResponse "Donation not found"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Router /donations/{id} [delete]
 func (h *DonationController) DeleteDonation(c echo.Context) error {
 	idParam := c.Param("id")
 	id64, err := strconv.ParseUint(idParam, 10, 64)
@@ -195,6 +324,22 @@ func (h *DonationController) DeleteDonation(c echo.Context) error {
 	return utils.NoContentResponse(c)
 }
 
+// PatchDonation godoc
+// @Summary Partially update donation
+// @Description Partially update a donation by ID (owner or admin only)
+// @Tags Your Donate Rise API - Donations
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Donation ID"
+// @Param donation body dto.DonationDTO true "Partial donation data"
+// @Success 200 {object} utils.SuccessResponseData "donation patched"
+// @Failure 400 {object} utils.ErrorResponse "Bad request - Invalid ID or payload"
+// @Failure 401 {object} utils.ErrorResponse "Unauthorized - Invalid or missing token"
+// @Failure 403 {object} utils.ErrorResponse "Forbidden - Access denied"
+// @Failure 404 {object} utils.ErrorResponse "Donation not found"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Router /donations/{id} [patch]
 func (h *DonationController) PatchDonation(c echo.Context) error {
 	idParam := c.Param("id")
 	id64, err := strconv.ParseUint(idParam, 10, 64)
