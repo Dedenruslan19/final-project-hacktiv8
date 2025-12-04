@@ -1410,7 +1410,12 @@ const docTemplate = `{
         },
         "/donations/final": {
             "get": {
-                "description": "Retrieve all items that were directly donated to institutions with pagination",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve all items that were directly donated to institutions with pagination (admin only)",
                 "consumes": [
                     "application/json"
                 ],
@@ -1442,8 +1447,60 @@ const docTemplate = `{
                             "$ref": "#/definitions/utils.SuccessResponseData"
                         }
                     },
-                    "400": {
-                        "description": "Bad request - Failed to fetch final donations",
+                    "401": {
+                        "description": "Unauthorized - Invalid or missing token",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Admin access required",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/donations/final/me": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve all final donations made by the authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Your Donate Rise API - Final Donations"
+                ],
+                "summary": "Get my final donations",
+                "responses": {
+                    "200": {
+                        "description": "Final donations fetched successfully",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SuccessResponseData"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Invalid or missing token",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/utils.ErrorResponse"
                         }
@@ -1453,7 +1510,12 @@ const docTemplate = `{
         },
         "/donations/final/user/{user_id}": {
             "get": {
-                "description": "Retrieve all final donations made by a specific user",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve all final donations made by a specific user (admin only)",
                 "consumes": [
                     "application/json"
                 ],
@@ -1481,7 +1543,25 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad request - Invalid user ID or failed to fetch",
+                        "description": "Bad request - Invalid user ID",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - Invalid or missing token",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Admin access required",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/utils.ErrorResponse"
                         }

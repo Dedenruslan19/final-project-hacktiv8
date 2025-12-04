@@ -1262,7 +1262,7 @@ paths:
       consumes:
       - application/json
       description: Retrieve all items that were directly donated to institutions with
-        pagination
+        pagination (admin only)
       parameters:
       - description: 'Page number (default: 1)'
         in: query
@@ -1279,18 +1279,53 @@ paths:
           description: Final donations fetched successfully
           schema:
             $ref: '#/definitions/utils.SuccessResponseData'
-        "400":
-          description: Bad request - Failed to fetch final donations
+        "401":
+          description: Unauthorized - Invalid or missing token
           schema:
             $ref: '#/definitions/utils.ErrorResponse'
+        "403":
+          description: Forbidden - Admin access required
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Get all final donations
+      tags:
+      - Your Donate Rise API - Final Donations
+  /donations/final/me:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all final donations made by the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Final donations fetched successfully
+          schema:
+            $ref: '#/definitions/utils.SuccessResponseData'
+        "401":
+          description: Unauthorized - Invalid or missing token
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get my final donations
       tags:
       - Your Donate Rise API - Final Donations
   /donations/final/user/{user_id}:
     get:
       consumes:
       - application/json
-      description: Retrieve all final donations made by a specific user
+      description: Retrieve all final donations made by a specific user (admin only)
       parameters:
       - description: User ID
         in: path
@@ -1305,9 +1340,23 @@ paths:
           schema:
             $ref: '#/definitions/utils.SuccessResponseData'
         "400":
-          description: Bad request - Invalid user ID or failed to fetch
+          description: Bad request - Invalid user ID
           schema:
             $ref: '#/definitions/utils.ErrorResponse'
+        "401":
+          description: Unauthorized - Invalid or missing token
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "403":
+          description: Forbidden - Admin access required
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Get final donations by user ID
       tags:
       - Your Donate Rise API - Final Donations
