@@ -10,6 +10,8 @@ var (
 	ErrUserNotFoundName     = errors.New("user name not found")
 	ErrUserNotFoundEmail    = errors.New("user email not found")
 	ErrUserNotFoundPassword = errors.New("user password not found")
+	ErrInvalidCredential    = errors.New("invalid credentials")
+
 	// Payment Errors
 	ErrPaymentNotFound       = errors.New("payment not found")
 	ErrInvalidPayment        = errors.New("invalid payment data")
