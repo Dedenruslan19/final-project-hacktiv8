@@ -1,3 +1,25 @@
+// Your Donate Rise API
+// @title Your Donate Rise API
+// @version 1.0
+// @description A comprehensive donation and auction management system that transforms donated goods into meaningful impact through transparent auctions and direct donations to institutions in need.
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name API Support
+// @contact.url http://www.swagger.io/support
+// @contact.email support@swagger.io
+
+// @license.name MIT
+// @license.url https://opensource.org/licenses/MIT
+
+// @host yourdonaterise-278016640112.asia-southeast2.run.app
+// @BasePath /
+// @schemes https http
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and JWT token.
+
 package main
 
 import (
@@ -9,12 +31,14 @@ import (
 	"cloud.google.com/go/storage"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
+	"github.com/swaggo/echo-swagger"
 
 	"milestone3/be/api/routes"
 	"milestone3/be/config"
 	"milestone3/be/internal/controller"
 	"milestone3/be/internal/repository"
 	"milestone3/be/internal/service"
+	_ "milestone3/be/docs" // swagger docs
 )
 
 var loggerOption = slog.HandlerOptions{AddSource: true}
@@ -99,6 +123,9 @@ func main() {
 	// echo + router
 	e := echo.New()
 	router := routes.NewRouter(e)
+
+	// Swagger route
+	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	router.RegisterUserRoutes(userCtrl)
 	router.RegisterArticleRoutes(articleCtrl)

@@ -23,6 +23,15 @@ func NewArticleController(s service.ArticleService, storage repository.GCPStorag
 	return &ArticleController{svc: s, storagePublic: storage}
 }
 
+// GetAllArticles godoc
+// @Summary Get all transparency articles
+// @Description Retrieve all published weekly transparency articles
+// @Tags Your Donate Rise API - Articles
+// @Accept json
+// @Produce json
+// @Success 200 {object} utils.Response "Articles retrieved successfully"
+// @Failure 500 {object} utils.Response "Internal server error"
+// @Router /articles [get]
 func (h *ArticleController) GetAllArticles(c echo.Context) error {
 	articles, err := h.svc.GetAllArticles()
 	if err != nil {
@@ -31,6 +40,18 @@ func (h *ArticleController) GetAllArticles(c echo.Context) error {
 	return utils.SuccessResponse(c, "articles fetched", articles)
 }
 
+// GetArticleByID godoc
+// @Summary Get article by ID
+// @Description Retrieve a specific transparency article by its ID
+// @Tags Your Donate Rise API - Articles
+// @Accept json
+// @Produce json
+// @Param id path int true "Article ID"
+// @Success 200 {object} utils.Response "Article retrieved successfully"
+// @Failure 400 {object} utils.Response "Bad request - Invalid article ID"
+// @Failure 404 {object} utils.Response "Article not found"
+// @Failure 500 {object} utils.Response "Internal server error"
+// @Router /articles/{id} [get]
 func (h *ArticleController) GetArticleByID(c echo.Context) error {
 	idParam := c.Param("id")
 	id64, err := strconv.ParseUint(idParam, 10, 64)
@@ -47,6 +68,24 @@ func (h *ArticleController) GetArticleByID(c echo.Context) error {
 	return utils.SuccessResponse(c, "article fetched", article)
 }
 
+// CreateArticle godoc
+// @Summary Create new transparency article
+// @Description Create a new weekly transparency article with optional image upload
+// @Tags Your Donate Rise API - Articles
+// @Accept multipart/form-data
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param title formData string true "Article title"
+// @Param content formData string true "Article content"
+// @Param week formData int true "Week number"
+// @Param image formData file false "Article image (optional)"
+// @Success 201 {object} utils.Response "Article created successfully"
+// @Failure 400 {object} utils.Response "Bad request - Invalid payload or image"
+// @Failure 401 {object} utils.Response "Unauthorized - Invalid or missing token"
+// @Failure 403 {object} utils.Response "Forbidden - Admin access required"
+// @Failure 500 {object} utils.Response "Internal server error"
+// @Router /articles [post]
 func (h *ArticleController) CreateArticle(c echo.Context) error {
 	if !utils.IsAdmin(c) {
 		return utils.ForbiddenResponse(c, "admin only")
@@ -104,6 +143,22 @@ func (h *ArticleController) CreateArticle(c echo.Context) error {
 	return utils.CreatedResponse(c, "article created", nil)
 }
 
+// UpdateArticle godoc
+// @Summary Update existing article
+// @Description Update an existing transparency article by ID
+// @Tags Your Donate Rise API - Articles
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Article ID"
+// @Param article body object true "Updated article data"
+// @Success 200 {object} utils.Response "Article updated successfully"
+// @Failure 400 {object} utils.Response "Bad request - Invalid ID or payload"
+// @Failure 401 {object} utils.Response "Unauthorized - Invalid or missing token"
+// @Failure 403 {object} utils.Response "Forbidden - Admin access required"
+// @Failure 404 {object} utils.Response "Article not found"
+// @Failure 500 {object} utils.Response "Internal server error"
+// @Router /articles/{id} [put]
 func (h *ArticleController) UpdateArticle(c echo.Context) error {
 	if !utils.IsAdmin(c) {
 		return utils.ForbiddenResponse(c, "admin only")
@@ -127,6 +182,21 @@ func (h *ArticleController) UpdateArticle(c echo.Context) error {
 	return utils.SuccessResponse(c, "article updated", nil)
 }
 
+// DeleteArticle godoc
+// @Summary Delete article
+// @Description Delete a transparency article by ID
+// @Tags Your Donate Rise API - Articles
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Article ID"
+// @Success 204 "Article deleted successfully"
+// @Failure 400 {object} utils.Response "Bad request - Invalid article ID"
+// @Failure 401 {object} utils.Response "Unauthorized - Invalid or missing token"
+// @Failure 403 {object} utils.Response "Forbidden - Admin access required"
+// @Failure 404 {object} utils.Response "Article not found"
+// @Failure 500 {object} utils.Response "Internal server error"
+// @Router /articles/{id} [delete]
 func (h *ArticleController) DeleteArticle(c echo.Context) error {
 	if !utils.IsAdmin(c) {
 		return utils.ForbiddenResponse(c, "admin only")

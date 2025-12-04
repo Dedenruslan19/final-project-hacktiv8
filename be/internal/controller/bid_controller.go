@@ -55,6 +55,23 @@ func isAdminFromToken(c echo.Context) bool {
 	return ok && role == "admin"
 }
 
+// PlaceBid godoc
+// @Summary Place bid on auction item
+// @Description Place a bid on a specific auction item within an active session
+// @Tags Your Donate Rise API - Bidding
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param sessionID path int true "Auction Session ID"
+// @Param itemID path int true "Auction Item ID"
+// @Param bid body object true "Bid amount"
+// @Success 200 {object} utils.Response "Bid placed successfully"
+// @Failure 400 {object} utils.Response "Bad request - Invalid parameters or bid too low"
+// @Failure 401 {object} utils.Response "Unauthorized - Invalid or missing token"
+// @Failure 404 {object} utils.Response "Auction session or item not found"
+// @Failure 409 {object} utils.Response "Conflict - Invalid auction state"
+// @Failure 500 {object} utils.Response "Internal server error"
+// @Router /auction/sessions/{sessionID}/items/{itemID}/bid [post]
 func (h *BidController) PlaceBid(c echo.Context) error {
 	sessionIDStr := c.Param("sessionID")
 	itemIDStr := c.Param("itemID")
@@ -111,6 +128,19 @@ func (h *BidController) PlaceBid(c echo.Context) error {
 	return utils.SuccessResponse(c, "bid placed successfully", nil)
 }
 
+// GetHighestBid godoc
+// @Summary Get highest bid for auction item
+// @Description Retrieve the current highest bid for a specific auction item
+// @Tags Your Donate Rise API - Bidding
+// @Accept json
+// @Produce json
+// @Param sessionID path int true "Auction Session ID"
+// @Param itemID path int true "Auction Item ID"
+// @Success 200 {object} utils.Response "Highest bid retrieved successfully"
+// @Failure 400 {object} utils.Response "Bad request - Invalid session or item ID"
+// @Failure 404 {object} utils.Response "Auction not found"
+// @Failure 500 {object} utils.Response "Internal server error"
+// @Router /auction/sessions/{sessionID}/items/{itemID}/highest-bid [get]
 func (h *BidController) GetHighestBid(c echo.Context) error {
 	sessionIDStr := c.Param("sessionID")
 	itemIDStr := c.Param("itemID")
@@ -145,6 +175,21 @@ func (h *BidController) GetHighestBid(c echo.Context) error {
 	return utils.SuccessResponse(c, "highest bid retrieved successfully", resp)
 }
 
+// SyncHighestBid godoc
+// @Summary Sync highest bid to database
+// @Description Synchronize the highest bid from Redis cache to the database
+// @Tags Your Donate Rise API - Bidding
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param sessionID path int true "Auction Session ID"
+// @Param itemID path int true "Auction Item ID"
+// @Success 200 {object} utils.Response "Highest bid synced to database"
+// @Failure 400 {object} utils.Response "Bad request - Invalid session or item ID"
+// @Failure 401 {object} utils.Response "Unauthorized - Invalid or missing token"
+// @Failure 403 {object} utils.Response "Forbidden - Admin access required"
+// @Failure 500 {object} utils.Response "Internal server error"
+// @Router /auction/sessions/{sessionID}/items/{itemID}/sync [post]
 func (h *BidController) SyncHighestBid(c echo.Context) error {
 	if !isAdminFromToken(c) {
 		return utils.ForbiddenResponse(c, "only admin can sync bids")
