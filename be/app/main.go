@@ -112,7 +112,7 @@ func main() {
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8000"
+		port = "8080"
 	}
 	if err := e.Start(":" + port); err != nil {
 		log.Fatalf("failed to start server: %v", err)
