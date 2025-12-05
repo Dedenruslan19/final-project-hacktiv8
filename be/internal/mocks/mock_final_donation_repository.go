@@ -2,14 +2,25 @@ package mocks
 
 import (
 	"milestone3/be/internal/entity"
-	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockFinalDonationRepository is a mock of FinalDonationRepository interface.
 type MockFinalDonationRepository struct {
 	ctrl     *gomock.Controller
 	recorder *MockFinalDonationRepositoryMockRecorder
+}
+
+// GetByDonationID implements repository.FinalDonationRepository.
+func (m *MockFinalDonationRepository) GetByDonationID(donationID uint) (entity.FinalDonation, error) {
+	panic("unimplemented")
+}
+
+// UpdateNotes implements repository.FinalDonationRepository.
+func (m *MockFinalDonationRepository) UpdateNotes(donationID uint, notes string) error {
+	panic("unimplemented")
 }
 
 // MockFinalDonationRepositoryMockRecorder is the mock recorder for MockFinalDonationRepository.

@@ -9,7 +9,7 @@ type ArticleDTO struct {
 	ID        uint      `json:"id,omitempty" validate:"omitempty"`
 	Title     string    `json:"title,omitempty" validate:"required"`
 	Content   string    `json:"content,omitempty" validate:"required"`
-	Week      int       `json:"week,omitempty" validate:"required"`
+	Week      int       `json:"week,omitempty" validate:"required"` // Format: YYYYMMDD (e.g., 20241204)
 	Image     string    `json:"image,omitempty" validate:"omitempty"`
 	CreatedAt time.Time `json:"created_at,omitempty"`
 }

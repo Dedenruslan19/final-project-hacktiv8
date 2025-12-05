@@ -1,12 +1,16 @@
 package service
 
 import (
+	"errors"
 	"log"
+
+	"golang.org/x/crypto/bcrypt"
+
 	"milestone3/be/internal/dto"
 	"milestone3/be/internal/entity"
 	"milestone3/be/internal/utils"
 
-	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 type UserRepository interface {
@@ -33,8 +37,8 @@ func (us *UserServ) CreateUser(req dto.UserRequest) (res dto.UserResponse, err e
 	req.Password = string(passHash)
 
 	user := entity.Users{
-		Name: req.Name,
-		Email: req.Email,
+		Name:     req.Name,
+		Email:    req.Email,
 		Password: req.Password,
 	}
 
@@ -60,35 +64,30 @@ func (us *UserServ) GetUserById(id int) (res dto.UserResponse, err error) {
 	}
 
 	userInfo := dto.UserResponse{
-		Id: user.Id,
-		Name: user.Name,
+		Id:    user.Id,
+		Name:  user.Name,
 		Email: user.Email,
-		Role: user.Role,
+		Role:  user.Role,
 	}
 
 	return userInfo, nil
 }
 
 func (us *UserServ) GetUserByEmail(email, password string) (accessToken string, err error) {
-	user, err := us.userRepo.GetByEmail(email) 
+	user, err := us.userRepo.GetByEmail(email)
 	if err != nil {
-		log.Println("failed get user by email", err.Error())
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return "", ErrInvalidCredential
+		}
 		return "", err
-	}		
+	}
 
-	// WIP auth/validation
-	//validation??
-	//mailjet validation kalo ada 
-
-	//compare hash pass and input pass
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-		log.Println("failed to compare password hash")
-		return "", err
+		return "", ErrInvalidCredential
 	}
 
 	token, err := utils.GenerateJwtToken(email, user.Role, user.Id)
 	if err != nil {
-		log.Println("failed to generate jwt token")
 		return "", err
 	}
 

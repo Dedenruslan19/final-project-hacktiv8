@@ -1,4 +1,4 @@
-# Donation & Auction Platform
+# Your Donate Rise - Donation & Auction Platform
 
 [![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat&logo=go)](https://golang.org/)
 [![Echo Framework](https://img.shields.io/badge/Echo-v4-00ADD8?style=flat&logo=go)](https://echo.labstack.com/)
@@ -6,6 +6,9 @@
 [![Redis](https://img.shields.io/badge/Redis-7+-DC382D?style=flat&logo=redis&logoColor=white)](https://redis.io/)
 [![Google Cloud](https://img.shields.io/badge/Google_Cloud-4285F4?style=flat&logo=google-cloud&logoColor=white)](https://cloud.google.com/)
 [![Midtrans](https://img.shields.io/badge/Midtrans-Payment-FF6B00?style=flat)](https://midtrans.com/)
+[![Swagger](https://img.shields.io/badge/Swagger-API_Docs-85EA2D?style=flat&logo=swagger)](https://yourdonaterise-278016640112.asia-southeast2.run.app/swagger/index.html)
+[![Coverage](https://img.shields.io/badge/Coverage-71.9%25-green?style=flat&logo=go)](be/coverage.html)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg?style=flat)](LICENSE)
 
 A comprehensive donation and auction management system that transforms donated goods into meaningful impact through transparent auctions and direct donations to institutions in need.
 
@@ -102,9 +105,9 @@ Real-time Bidding → Session Ends → Winner Selected → Payment → Delivery
 
 ### 3. Direct Donation Flow
 ```
-Verified Item → Final Donation List → Institution Request → Admin Approval
+Admin Approves (verified_for_donation) → Auto-create Final Donation Entry
     ↓
-Distribution → Delivery Confirmation → Transparency Report
+User Adds Notes → Final Donation Complete → Transparency Report
 ```
 
 ---
@@ -124,7 +127,7 @@ Distribution → Delivery Confirmation → Transparency Report
 - **Cloud Platform**: Google Cloud Platform
   - **Compute**: Cloud Run - Serverless, auto-scaling containers
   - **Storage**: Cloud Storage - Secure photo storage
-  - **Database**: Cloud SQL - Managed PostgreSQL
+- **Database**: Supabase - Managed PostgreSQL with real-time capabilities
 - **Containerization**: Docker
 
 ### Third-Party Services
@@ -142,92 +145,105 @@ Distribution → Delivery Confirmation → Transparency Report
 ## Project Structure
 
 ```
-.
+be/
 ├── app/
 │   └── main.go                          # Application entry point
 │
 ├── config/
-│   ├── connection_db.go                 # PostgreSQL connection setup
+│   ├── connectionDb.go                  # PostgreSQL connection setup
 │   └── redis.go                         # Redis client configuration
 │
 ├── internal/
 │   ├── controller/                      # HTTP request handlers
-│   │   ├── auth_controller.go
-│   │   ├── donation_controller.go
-│   │   ├── verification_controller.go
+│   │   ├── admin_controller.go
+│   │   ├── article_controller.go
 │   │   ├── auction_item_controller.go
 │   │   ├── auction_session_controller.go
 │   │   ├── bid_controller.go
+│   │   ├── donation_controller.go
+│   │   ├── final_donation_controller.go
 │   │   ├── payment_controller.go
-│   │   └── article_controller.go
+│   │   └── user_controller.go
 │   │
 │   ├── service/                         # Business logic layer
-│   │   ├── auth_service.go
-│   │   ├── donation_service.go
-│   │   ├── verification_service.go
+│   │   ├── admin_service.go
+│   │   ├── article_service.go
 │   │   ├── auction_item_service.go
 │   │   ├── auction_session_service.go
 │   │   ├── bid_service.go
+│   │   ├── donation_service.go
+│   │   ├── final_donation_service.go
 │   │   ├── payment_service.go
-│   │   └── article_service.go
+│   │   ├── user_service.go
+│   │   └── errors.go
 │   │
 │   ├── repository/                      # Data access layer
-│   │   ├── user_repository.go
-│   │   ├── donation_repository.go
-│   │   ├── verification_repository.go
-│   │   ├── auction_item_repository.go
-│   │   ├── auction_session_repository.go
-│   │   ├── bid_repository.go
-│   │   ├── payment_repository.go
-│   │   ├── article_repository.go
-│   │   └── third_party/
-│   │       ├── midtrans.go              # Midtrans payment integration
-│   │       └── mailjet.go               # Email service integration
-│   │
-│   ├── cron/                            # Scheduled jobs
-│   │   ├── bidding_cron.go              # Auto-close auctions, select winners
-│   │   └── recap_cron.go                # Weekly report generation
+│   │   ├── admin_repo.go
+│   │   ├── ai_repo.go
+│   │   ├── article_repo.go
+│   │   ├── auction_item_repo.go
+│   │   ├── auction_session_repo.go
+│   │   ├── auction_session_redis.go
+│   │   ├── bid_repo.go
+│   │   ├── bid_redis_repo.go
+│   │   ├── donation_repo.go
+│   │   ├── final_donation.go
+│   │   ├── gcp_storage_repo.go
+│   │   ├── payment_repo.go
+│   │   └── user_repo.go
 │   │
 │   ├── entity/                          # Domain models
-│   │   ├── user.go
-│   │   ├── donation.go
-│   │   ├── verification.go
-│   │   ├── auction_item.go
-│   │   ├── auction_session.go
+│   │   ├── article.go
+│   │   ├── auction.go
 │   │   ├── bid.go
-│   │   ├── payment.go
+│   │   ├── donation.go
 │   │   ├── final_donation.go
-│   │   └── article.go
+│   │   ├── payment.go
+│   │   └── user.go
 │   │
-│   └── dto/                             # Data transfer objects
-│       ├── auth_dto.go
-│       ├── donation_dto.go
-│       ├── verification_dto.go
-│       ├── auction_item_dto.go
-│       ├── auction_session_dto.go
-│       ├── bid_dto.go
-│       ├── payment_dto.go
-│       └── article_dto.go
+│   ├── dto/                             # Data transfer objects
+│   │   ├── admin_dto.go
+│   │   ├── article_dto.go
+│   │   ├── auction_dto.go
+│   │   ├── bid_dto.go
+│   │   ├── donation_dto.go
+│   │   ├── final_donation_dto.go
+│   │   ├── payment_dto.go
+│   │   └── user_dto.go
+│   │
+│   ├── mocks/                           # Generated mock repositories
+│   │   └── mock_*.go
+│   │
+│   └── utils/                           # Utility functions
+│       ├── auth.go                      # Auth utilities
+│       ├── jwt.go                       # JWT token utilities
+│       ├── response.go                  # Standardized API responses
+│       └── validator.go                 # Validation utilities
 │
 ├── api/
 │   ├── middleware/
-│   │   ├── auth_middleware.go           # JWT authentication
-│   │   └── role_middleware.go           # Role-based access control
+│   │   ├── admin.go                     # Admin role check
+│   │   ├── auth.go                      # JWT authentication
+│   │   ├── logging.go                   # Request logging
 │   │
 │   └── routes/                          # API route definitions
-│       ├── auth_routes.go
-│       ├── donation_routes.go
-│       ├── verification_routes.go
-│       ├── auction_item_routes.go
-│       ├── auction_session_routes.go
+│       ├── admin_routes.go
+│       ├── article_routes.go
+│       ├── auction_routes.go
 │       ├── bid_routes.go
+│       ├── donation_routes.go
+│       ├── final_donation_routes.go
 │       ├── payment_routes.go
-│       └── article_routes.go
+│       ├── routes.go
+│       └── user_routes.go
 │
-├── utils/
-│   ├── jwt.go                           # JWT token utilities
-│   ├── response.go                      # Standardized API responses
-│   └── uploader.go                      # GCS file upload helper
+├── cron/
+│   └── main.go                          # Scheduled jobs
+│
+├── docs/                                # Swagger documentation
+│   ├── docs.go
+│   ├── swagger.json
+│   └── swagger.yaml
 │
 ├── migrations/
 │   ├── 001_init.sql                     # Schema and enum definitions
@@ -235,11 +251,10 @@ Distribution → Delivery Confirmation → Transparency Report
 │   └── 003_seed.sql                     # Seed data for testing
 │
 ├── .env.example                         # Environment variables template
-├── Dockerfile                           # Container configuration
-├── docker-compose.yml                   # Local development setup
 ├── go.mod                               # Go module dependencies
 ├── go.sum                               # Dependency checksums
-└── README.md                            # Project documentation
+├── Makefile                             # Build and test commands
+└── generate_mocks.sh                    # Mock generation script
 ```
 
 ---
@@ -325,76 +340,71 @@ CREATE TYPE payment_status AS ENUM ('pending', 'paid', 'failed');
 
 ### Authentication (2 endpoints)
 ```
-POST   /auth/register          Register new user
-POST   /auth/login             User authentication
+POST   /register               Register new user
+POST   /login                  User authentication
 ```
 
-### Donations (5 endpoints)
+### Donations (6 endpoints)
 ```
 POST   /donations              Create donation submission
-GET    /donations              List user's donations
+GET    /donations              List donations (admin: all, user: own)
 GET    /donations/{id}         Get donation details
 PUT    /donations/{id}         Update donation
+PATCH  /donations/{id}         Update donation status (admin only)
 DELETE /donations/{id}         Delete donation
-```
-
-### Verifications (3 endpoints)
-```
-GET    /verifications/pending  List pending verifications
-POST   /verifications/{id}     Submit verification result
-GET    /verifications/{id}     Get verification details
 ```
 
 ### Auction Items (5 endpoints)
 ```
 GET    /auction/items          List auction items
 GET    /auction/items/{id}     Get item details
-POST   /auction/items          Create auction item
-PUT    /auction/items/{id}     Update auction item
-DELETE /auction/items/{id}     Remove auction item
+POST   /auction/items          Create auction item (admin only)
+PUT    /auction/items/{id}     Update auction item (admin only)
+DELETE /auction/items/{id}     Remove auction item (admin only)
 ```
 
 ### Auction Sessions (5 endpoints)
 ```
-POST   /auction/sessions       Create auction session
+POST   /auction/sessions       Create auction session (admin only)
 GET    /auction/sessions       List all sessions
 GET    /auction/sessions/{id}  Get session details
-PUT    /auction/sessions/{id}  Update session
-DELETE /auction/sessions/{id}  Delete session
+PUT    /auction/sessions/{id}  Update session (admin only)
+DELETE /auction/sessions/{id}  Delete session (admin only)
 ```
 
 ### Bidding (3 endpoints)
 ```
-POST   /auction/items/{id}/bid Place bid on item
-GET    /auction/items/{id}/bids Get bid history
-GET    /bids/user              Get user's bid history
+POST   /auction/sessions/{sessionID}/items/{itemID}/bid         Place bid on item
+GET    /auction/sessions/{sessionID}/items/{itemID}/highest-bid Get highest bid
+POST   /auction/sessions/{sessionID}/items/{itemID}/sync        Sync highest bid from Redis
 ```
 
-### Final Donations (2 endpoints)
+### Final Donations (4 endpoints)
 ```
-GET    /donations/final        List direct donations
-GET    /donations/final/{id}   Get donation details
+GET    /donations/final              List final donations (admin: all, user: own)
+GET    /donations/final/me           Get my final donations
+GET    /donations/final/user/{id}    Get final donations by user (admin only)
+POST   /donations/final/notes        Add notes to final donation
 ```
 
-### Articles (3 endpoints)
+### Articles (2 endpoints)
 ```
-POST   /articles               Publish weekly article
+POST   /articles               Publish article (admin only)
 GET    /articles               List all articles
 GET    /articles/{id}          Get article details
 ```
 
 ### Payments (4 endpoints)
 ```
-POST   /payments               Create payment record
-GET    /payments/user          Get user's payments
+POST   /payments/{auctionId}   Create payment for auction
+GET    /payments               Get all payments
 GET    /payments/{id}          Get payment details
-POST   /payments/{id}/confirm  Confirm payment completion
+GET    /payments/status/{id}   Check payment status via Midtrans
 ```
 
-### Admin (2 endpoints)
+### Admin (1 endpoint)
 ```
 GET    /admin/dashboard        Get dashboard analytics
-GET    /admin/reports          Generate system reports
 ```
 
 ---
@@ -466,47 +476,30 @@ docker-compose down
 Create a `.env` file in the root directory:
 
 ```env
-# Application
-APP_ENV=development
-APP_PORT=8080
-APP_NAME=donation-auction-api
-
 # Database
-DB_HOST=localhost
-DB_PORT=5432
-DB_USER=postgres
-DB_PASSWORD=your_password
-DB_NAME=donation_auction
-DB_SSLMODE=disable
+POSTGRE_URL=postgres://user:password@host:5432/dbname?sslmode=disable
 
-# Redis
-REDIS_HOST=localhost
-REDIS_PORT=6379
-REDIS_PASSWORD=
-REDIS_DB=0
+# Application
+PORT=8000
 
 # JWT
-JWT_SECRET=your_jwt_secret_key
-JWT_EXPIRES_IN=24h
+SECRET_KEY=your_jwt_secret_key
+EXPIRED_JWT=24
 
 # Google Cloud Storage
-GCS_BUCKET_NAME=donation-photos
-GCS_PROJECT_ID=your_project_id
-GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json
+BUCKET_PUBLIC=your-gcp-public-bucket-name
+BUCKET_PRIVATE=your-gcp-private-bucket-name
+GOOGLE_APPLICATION_CREDENTIALS=/path/to/credentials.json
+
+# AI Service
+GEMINI_API_KEY=your_gemini_api_key
+
+# Redis
+REDIS_URL=rediss://default:password@host:6379
 
 # Midtrans
 MIDTRANS_SERVER_KEY=your_server_key
 MIDTRANS_CLIENT_KEY=your_client_key
-MIDTRANS_ENV=sandbox # or production
-
-# Email Service (Mailjet)
-MAILJET_API_KEY=your_api_key
-MAILJET_SECRET_KEY=your_secret_key
-MAILJET_FROM_EMAIL=noreply@yourapp.com
-MAILJET_FROM_NAME=Donation Platform
-
-# CORS
-CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173
 ```
 
 ---
@@ -725,7 +718,6 @@ For questions, issues, or contributions, please open an issue on the repository 
 **Testing**: Run tests with `go test ./...`
 
 --- 
-## Contributor
-- Rafly Ade Kusuma
-- Deden Ruslan
-- Aisiya Qutwatunnada
+## Contributors
+
+![Contributors](https://contrib.rocks/image?repo=raflyadek/milestone3&max=10&columns=3&background=0,0,0,0&image-height=80&animation=wave)

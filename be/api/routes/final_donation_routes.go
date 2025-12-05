@@ -6,15 +6,11 @@ import (
 )
 
 func (r *EchoRouter) RegisterFinalDonationRoutes(finalDonationCtrl *controller.FinalDonationController) {
-	finalDonationRoutes := r.echo.Group("/final_donations")
+	finalDonationRoutes := r.echo.Group("/donations/final")
+	finalDonationRoutes.Use(middleware.JWTMiddleware)
 
-	auth := finalDonationRoutes.Group("")
-	auth.Use(middleware.JWTMiddleware)
-
-	admin := auth.Group("")
-	admin.Use(middleware.RequireAdmin)
-	admin.GET("", finalDonationCtrl.GetAllFinalDonations)
-	admin.GET("/user/:user_id", finalDonationCtrl.GetAllFinalDonationsByUserID)
-
-	auth.GET("/me", finalDonationCtrl.GetMyFinalDonations)
+	finalDonationRoutes.GET("", finalDonationCtrl.GetAllFinalDonations)
+	finalDonationRoutes.GET("/me", finalDonationCtrl.GetMyFinalDonations)
+	finalDonationRoutes.GET("/user/:user_id", finalDonationCtrl.GetAllFinalDonationsByUserID)
+	finalDonationRoutes.POST("/notes", finalDonationCtrl.UpdateNotes)
 }

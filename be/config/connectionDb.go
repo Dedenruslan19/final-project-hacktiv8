@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
@@ -17,28 +16,15 @@ func ConnectionDb() *gorm.DB {
 	}
 
 	dsn := os.Getenv("POSTGRE_URL")
-
-	pgConfig := postgres.Config{
+	db, err := gorm.Open(postgres.New(postgres.Config{
 		DSN:                  dsn,
-		PreferSimpleProtocol: true,
-	}
-
-	db, err := gorm.Open(postgres.New(pgConfig), &gorm.Config{
-		//set stmt cache disabled
+		PreferSimpleProtocol: true, // Disable prepared statements completely
+	}), &gorm.Config{
 		PrepareStmt: false,
 	})
 	if err != nil {
-		log.Fatalf("error connect to database %s", err)
+		log.Printf("error connect to database %s", err)
 	}
-
-	sqlDB, err := db.DB()
-	if err != nil {
-		log.Fatalf("error getting database instance: %s", err)
-	}
-
-	sqlDB.SetMaxIdleConns(10)
-	sqlDB.SetMaxOpenConns(100)
-	sqlDB.SetConnMaxLifetime(time.Hour)
 
 	fmt.Println("success connect to db")
 	return db

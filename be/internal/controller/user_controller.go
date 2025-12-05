@@ -1,7 +1,10 @@
 package controller
 
 import (
+	"errors"
+
 	"milestone3/be/internal/dto"
+	"milestone3/be/internal/service"
 	"milestone3/be/internal/utils"
 
 	"github.com/go-playground/validator/v10"
@@ -15,7 +18,7 @@ type UserService interface {
 
 type UserController struct {
 	userService UserService
-	validate *validator.Validate
+	validate    *validator.Validate
 }
 
 func NewUserController(validate *validator.Validate, us UserService) *UserController {
@@ -66,17 +69,18 @@ func (uc *UserController) CreateUser(c echo.Context) error {
 // @Router /auth/login [post]
 func (uc *UserController) LoginUser(c echo.Context) error {
 	req := new(dto.UserLoginRequest)
-
 	if err := c.Bind(req); err != nil {
 		return utils.BadRequestResponse(c, err.Error())
 	}
-
 	if err := uc.validate.Struct(req); err != nil {
 		return utils.BadRequestResponse(c, err.Error())
 	}
 
 	resp, err := uc.userService.GetUserByEmail(req.Email, req.Password)
 	if err != nil {
+		if errors.Is(err, service.ErrInvalidCredential) {
+			return utils.UnauthorizedResponse(c, "invalid email or password")
+		}
 		return utils.InternalServerErrorResponse(c, "internal server error")
 	}
 

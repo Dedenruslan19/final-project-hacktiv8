@@ -10,6 +10,8 @@ var (
 	ErrUserNotFoundName     = errors.New("user name not found")
 	ErrUserNotFoundEmail    = errors.New("user email not found")
 	ErrUserNotFoundPassword = errors.New("user password not found")
+	ErrInvalidCredential    = errors.New("invalid credentials")
+
 	// Payment Errors
 	ErrPaymentNotFound       = errors.New("payment not found")
 	ErrInvalidPayment        = errors.New("invalid payment data")
@@ -44,6 +46,7 @@ var (
 	// Final Donation Errors
 	ErrFinalDonationNotFound   = errors.New("final donation not found")
 	ErrFinalDonationNotFoundID = errors.New("final donation ID not found")
+	ErrDonationNotVerified     = errors.New("donation not verified for donation")
 	// image Errors
 	ErrImageNotFound   = errors.New("image not found")
 	ErrSignedURLFailed = errors.New("signed URL generation failed")

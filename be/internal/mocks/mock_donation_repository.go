@@ -4,15 +4,21 @@ import (
 	"context"
 	"io"
 	"milestone3/be/internal/entity"
-	"time"
-	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
+	"time"
+
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockDonationRepo is a mock of DonationRepo interface.
 type MockDonationRepo struct {
 	ctrl     *gomock.Controller
 	recorder *MockDonationRepoMockRecorder
+}
+
+// CreateFinalDonation implements repository.DonationRepo.
+func (m *MockDonationRepo) CreateFinalDonation(donationID uint) error {
+	panic("unimplemented")
 }
 
 // MockDonationRepoMockRecorder is the mock recorder for MockDonationRepo.
