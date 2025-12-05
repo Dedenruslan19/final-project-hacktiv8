@@ -717,7 +717,10 @@ For questions, issues, or contributions, please open an issue on the repository 
 **Testing**: Run tests with `go test ./...`
 
 --- 
-## Contributor
-- Rafly Ade Kusuma
-- Deden Ruslan
-- Aisiya Qutwatunnada
+## Contributors
+
+<p float="left">
+  <a href="https://github.com/raflyadek"><img src="https://github.com/raflyadek.png" width="80"/></a>
+  <a href="https://github.com/Dedenruslan19"><img src="https://github.com/Dedenruslan19.png" width="80"/></a>
+  <a href="https://github.com/yoockh"><img src="https://github.com/yoockh.png" width="80"/></a>
+</p>
