@@ -20,12 +20,18 @@ type AuctionItemDTO struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 }
 
-func AuctionItemRequest(d AuctionItemDTO) (entity.AuctionItem, error) {
-	// photos := make([]entity.DonationPhoto, 0, len(d.Photos))
-	// for _, u := range d.Photos {
-	// 	photos = append(photos, entity.DonationPhoto{URL: u, DonationID: uint(d.DonationID)})
-	// }
+// AuctionItemUpdateDTO for partial updates (all fields optional)
+type AuctionItemUpdateDTO struct {
+	Title         *string  `json:"title,omitempty"`
+	Description   *string  `json:"description,omitempty"`
+	Category      *string  `json:"category,omitempty"`
+	Status        *string  `json:"status,omitempty" validate:"omitempty,oneof=scheduled ongoing finished"`
+	StartingPrice *float64 `json:"starting_price,omitempty" validate:"omitempty,min=0"`
+	SessionID     *int64   `json:"session_id,omitempty"`
+	DonationID    *int64   `json:"donation_id,omitempty"`
+}
 
+func AuctionItemRequest(d AuctionItemDTO) (entity.AuctionItem, error) {
 	status := d.Status
 	if status == "" {
 		status = "scheduled"
@@ -41,16 +47,10 @@ func AuctionItemRequest(d AuctionItemDTO) (entity.AuctionItem, error) {
 		Status:        status,
 		StartingPrice: d.StartingPrice,
 		CreatedAt:     d.CreatedAt,
-		// Photos:        photos,
 	}, nil
 }
 
 func AuctionItemResponse(m entity.AuctionItem) AuctionItemDTO {
-	// photos := make([]string, 0, len(m.Photos))
-	// for _, p := range m.Photos {
-	// 	photos = append(photos, p.URL)
-	// }
-
 	return AuctionItemDTO{
 		ID:            m.ID,
 		DonationID:    m.DonationID,
@@ -60,8 +60,7 @@ func AuctionItemResponse(m entity.AuctionItem) AuctionItemDTO {
 		Category:      m.Category,
 		Status:        m.Status,
 		StartingPrice: m.StartingPrice,
-		// Photos:        photos,
-		CreatedAt: m.CreatedAt,
+		CreatedAt:     m.CreatedAt,
 	}
 }
 
@@ -75,7 +74,7 @@ func AuctionItemResponses(ms []entity.AuctionItem) []AuctionItemDTO {
 
 type AuctionSessionDTO struct {
 	Name      string    `json:"name,omitempty" validate:"required"`
-	ID        int       `json:"id,omitempty"`
+	ID        int64     `json:"id,omitempty"`
 	StartTime time.Time `json:"start_time,omitempty" validate:"required"`
 	EndTime   time.Time `json:"end_time,omitempty" validate:"required"`
 }
@@ -83,7 +82,7 @@ type AuctionSessionDTO struct {
 func AuctionSessionResponse(m entity.AuctionSession) AuctionSessionDTO {
 	return AuctionSessionDTO{
 		Name:      m.Name,
-		ID:        int(m.ID),
+		ID:        m.ID,
 		StartTime: m.StartTime,
 		EndTime:   m.EndTime,
 	}

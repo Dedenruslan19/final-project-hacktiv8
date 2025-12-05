@@ -20,10 +20,9 @@ func TestAuctionSessionService_Create(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockAuctionSessionRepository(ctrl)
-	mockRedis := mocks.NewMockSessionRedisRepository(ctrl)
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
-	
-	sessionService := NewAuctionSessionService(mockRepo, mockRedis, logger)
+
+	sessionService := NewAuctionSessionService(mockRepo, logger)
 
 	now := time.Now()
 	future := now.Add(time.Hour)
@@ -43,7 +42,6 @@ func TestAuctionSessionService_Create(t *testing.T) {
 			},
 			setup: func() {
 				mockRepo.EXPECT().Create(gomock.Any()).Return(nil)
-				mockRedis.EXPECT().SetActiveSession(gomock.Any()).Return(nil).AnyTimes()
 			},
 			wantErr: false,
 		},
@@ -84,9 +82,9 @@ func TestAuctionSessionService_Create(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			
+
 			result, err := sessionService.Create(&tt.req)
-			
+
 			if tt.wantErr {
 				assert.Error(t, err)
 				assert.Empty(t, result)
@@ -103,10 +101,9 @@ func TestAuctionSessionService_GetByID(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockAuctionSessionRepository(ctrl)
-	mockRedis := mocks.NewMockSessionRedisRepository(ctrl)
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
-	
-	sessionService := NewAuctionSessionService(mockRepo, mockRedis, logger)
+
+	sessionService := NewAuctionSessionService(mockRepo, logger)
 
 	tests := []struct {
 		name    string
@@ -139,9 +136,9 @@ func TestAuctionSessionService_GetByID(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			
+
 			result, err := sessionService.GetByID(tt.id)
-			
+
 			if tt.wantErr {
 				assert.Error(t, err)
 				assert.Empty(t, result)
@@ -158,10 +155,9 @@ func TestAuctionSessionService_GetAll(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := mocks.NewMockAuctionSessionRepository(ctrl)
-	mockRedis := mocks.NewMockSessionRedisRepository(ctrl)
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
-	
-	sessionService := NewAuctionSessionService(mockRepo, mockRedis, logger)
+
+	sessionService := NewAuctionSessionService(mockRepo, logger)
 
 	tests := []struct {
 		name    string
@@ -191,9 +187,9 @@ func TestAuctionSessionService_GetAll(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			
+
 			result, err := sessionService.GetAll()
-			
+
 			if tt.wantErr {
 				assert.Error(t, err)
 				assert.Nil(t, result)

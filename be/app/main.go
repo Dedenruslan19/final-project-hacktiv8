@@ -36,6 +36,7 @@ import (
 	"milestone3/be/api/routes"
 	"milestone3/be/config"
 	"milestone3/be/internal/controller"
+	scheduler "milestone3/be/internal/cron"
 	"milestone3/be/internal/repository"
 	"milestone3/be/internal/service"
 	_ "milestone3/be/docs" // swagger docs
@@ -89,7 +90,6 @@ func main() {
 	bidRepo := repository.NewBidRepository(db)
 	redisClient := config.ConnectRedis(ctx)
 	redisRepo := repository.NewBidRedisRepository(redisClient, ctx)
-	auctionRedisRepo := repository.NewSessionRedisRepository(redisClient, ctx)
 	aiRepo := repository.NewAIRepository(logger, os.Getenv("GEMINI_API_KEY"))
 
 	// services
@@ -99,13 +99,17 @@ func main() {
 	finalDonationSvc := service.NewFinalDonationService(finalDonationRepo)
 	paymentSvc := service.NewPaymentService(paymentRepo)
 	adminSvc := service.NewAdminService(adminRepo)
-	bidSvc := service.NewBidService(redisRepo, bidRepo, auctionItemRepo, logger)
 	auctionSvc := service.NewAuctionItemService(auctionItemRepo, aiRepo, logger)
+	auctionSessionSvc := service.NewAuctionSessionService(auctionSessionRepo, logger)
+	bidSvc := service.NewBidService(redisRepo, bidRepo, auctionItemRepo, auctionSessionRepo, logger)
+
+	// bid scheduler (now also handles auction auto-start)
+	bidScheduler := scheduler.NewBidScheduler(bidSvc, auctionSvc, logger)
+	bidScheduler.Start()
 
 	// controllers
 	userCtrl := controller.NewUserController(validate, userSvc)
 	adminCtrl := controller.NewAdminController(adminSvc)
-	auctionSessionSvc := service.NewAuctionSessionService(auctionSessionRepo, auctionRedisRepo, logger)
 	articleCtrl := controller.NewArticleController(articleSvc, gcpPublicRepo)
 
 	var donationCtrl *controller.DonationController

@@ -11,6 +11,7 @@ type AuctionItemRepository interface {
 	GetAll() ([]entity.AuctionItem, error)
 	GetByID(id int64) (*entity.AuctionItem, error)
 	ReadBySession(sessionID int64) ([]entity.AuctionItem, error)
+	GetScheduledItems() ([]entity.AuctionItem, error)
 	Update(item *entity.AuctionItem) error
 	Delete(id int64) error
 }
@@ -29,7 +30,7 @@ func (r *auctionItemRepository) Create(item *entity.AuctionItem) error {
 
 func (r *auctionItemRepository) GetAll() ([]entity.AuctionItem, error) {
 	var items []entity.AuctionItem
-	err := r.db.Preload("Session").Preload("Photos").Find(&items).Error
+	err := r.db.Preload("Session").Find(&items).Error
 	return items, err
 }
 
@@ -41,7 +42,13 @@ func (r *auctionItemRepository) GetByID(id int64) (*entity.AuctionItem, error) {
 
 func (r *auctionItemRepository) ReadBySession(sessionID int64) ([]entity.AuctionItem, error) {
 	var items []entity.AuctionItem
-	err := r.db.Preload("Session").Preload("Photos").Where("session_id = ?", sessionID).Find(&items).Error
+	err := r.db.Preload("Session").Where("session_id = ?", sessionID).Find(&items).Error
+	return items, err
+}
+
+func (r *auctionItemRepository) GetScheduledItems() ([]entity.AuctionItem, error) {
+	var items []entity.AuctionItem
+	err := r.db.Preload("Session").Where("status = ?", "scheduled").Find(&items).Error
 	return items, err
 }
 
