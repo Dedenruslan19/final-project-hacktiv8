@@ -13,7 +13,7 @@ func (r *EchoRouter) RegisterAuctionRoutes(auctionCtrl *controller.AuctionContro
 	g.GET("", auctionCtrl.GetAllAuctionItems)
 	g.GET("/:id", auctionCtrl.GetAuctionItemByID)
 	g.POST("", auctionCtrl.CreateAuctionItem)
-	g.PUT("/:id", auctionCtrl.UpdateAuctionItem)
+	g.PATCH("/:id", auctionCtrl.UpdateAuctionItem)
 	g.DELETE("/:id", auctionCtrl.DeleteAuctionItem)
 }
 

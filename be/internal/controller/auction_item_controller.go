@@ -82,11 +82,11 @@ func (h *AuctionController) CreateAuctionItem(c echo.Context) error {
 	}
 
 	var payload dto.AuctionItemDTO
-	if err := c.Bind(&payload); err != nil {
+	if err = c.Bind(&payload); err != nil {
 		return utils.BadRequestResponse(c, "invalid payload")
 	}
 
-	if err := h.validate.Struct(payload); err != nil {
+	if err = h.validate.Struct(payload); err != nil {
 		return utils.BadRequestResponse(c, err.Error())
 	}
 
@@ -140,7 +140,7 @@ func (h *AuctionController) GetAuctionItemByID(c echo.Context) error {
 	if err != nil {
 		switch err {
 		case service.ErrAuctionNotFoundID:
-			return utils.NotFoundResponse(c, "auction item not found")
+			return utils.NotFoundResponse(c, err.Error())
 		default:
 			return utils.InternalServerErrorResponse(c, "failed retrieving auction item")
 		}
@@ -166,7 +166,6 @@ func (h *AuctionController) GetAuctionItemByID(c echo.Context) error {
 // @Failure 500 {object} utils.ErrorResponse "Internal server error"
 // @Router /auction/items/{id} [put]
 func (h *AuctionController) UpdateAuctionItem(c echo.Context) error {
-	// Check if user is admin
 	if !isAdminFromTokenItem(c) {
 		return utils.ForbiddenResponse(c, "only admin can update auction items")
 	}
@@ -177,7 +176,7 @@ func (h *AuctionController) UpdateAuctionItem(c echo.Context) error {
 		return utils.BadRequestResponse(c, "invalid auction item ID")
 	}
 
-	var payload dto.AuctionItemDTO
+	var payload dto.AuctionItemUpdateDTO
 	if err = c.Bind(&payload); err != nil {
 		return utils.BadRequestResponse(c, "invalid payload")
 	}
@@ -190,9 +189,15 @@ func (h *AuctionController) UpdateAuctionItem(c echo.Context) error {
 	if err != nil {
 		switch err {
 		case service.ErrAuctionNotFoundID:
-			return utils.NotFoundResponse(c, "auction item not found")
+			return utils.NotFoundResponse(c, err.Error())
+		case service.ErrSessionNotFoundID:
+			return utils.NotFoundResponse(c, err.Error())
+		case service.ErrAuctionFinished:
+			return utils.ConflictResponse(c, err.Error())
+		case service.ErrActiveSession:
+			return utils.ConflictResponse(c, err.Error())
 		case service.ErrInvalidAuction:
-			return utils.BadRequestResponse(c, "invalid auction item data")
+			return utils.BadRequestResponse(c, err.Error())
 		default:
 			return utils.InternalServerErrorResponse(c, "failed updating auction item")
 		}
@@ -217,7 +222,6 @@ func (h *AuctionController) UpdateAuctionItem(c echo.Context) error {
 // @Failure 500 {object} utils.ErrorResponse "Internal server error"
 // @Router /auction/items/{id} [delete]
 func (h *AuctionController) DeleteAuctionItem(c echo.Context) error {
-	// Check if user is admin
 	if !isAdminFromTokenItem(c) {
 		return utils.ForbiddenResponse(c, "only admin can delete auction items")
 	}
@@ -232,9 +236,9 @@ func (h *AuctionController) DeleteAuctionItem(c echo.Context) error {
 	if err != nil {
 		switch err {
 		case service.ErrAuctionNotFoundID:
-			return utils.NotFoundResponse(c, "auction item not found")
+			return utils.NotFoundResponse(c, err.Error())
 		case service.ErrInvalidAuction:
-			return utils.BadRequestResponse(c, "cannot delete auction item")
+			return utils.BadRequestResponse(c, err.Error())
 		default:
 			return utils.InternalServerErrorResponse(c, "failed deleting auction item")
 		}
